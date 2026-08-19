@@ -8,6 +8,7 @@ public class Serina {
     private static final String MESSAGE_PREFIX = "     ";
     private static final int MAX_TASKS = 100;
     private static final String MAX_TASKS_MESSAGE = "You've reached the maximum number of tasks.";
+    private static final String INVALID_TASK_NUMBER_MESSAGE = "Please provide a valid task number.";
 
     /**
      * Starts Serina and processes user commands from standard input.
@@ -16,7 +17,7 @@ public class Serina {
      */
     public static void main(String[] args) {
         try (Scanner scanner = new Scanner(System.in)) {
-            String[] tasks = new String[MAX_TASKS];
+            Task[] tasks = new Task[MAX_TASKS];
             int taskCount = 0;
 
             showGreeting();
@@ -32,6 +33,14 @@ public class Serina {
                 try {
                     if (input.equals("list")) {
                         showList(tasks, taskCount);
+                    } else if (input.startsWith("mark ")) {
+                        Task task = getTask(tasks, taskCount, input.substring("mark ".length()));
+                        task.markAsDone();
+                        showMarkedTask(task);
+                    } else if (input.startsWith("unmark ")) {
+                        Task task = getTask(tasks, taskCount, input.substring("unmark ".length()));
+                        task.markAsNotDone();
+                        showUnmarkedTask(task);
                     } else {
                         taskCount = addTask(tasks, taskCount, input);
                         showAddedTask(input);
@@ -40,6 +49,8 @@ public class Serina {
                     showMessage(e.getMessage());
                     showGoodbye();
                     break;
+                } catch (InvalidTaskNumberException e) {
+                    showMessage(e.getMessage());
                 }
             }
         }
@@ -50,13 +61,31 @@ public class Serina {
      *
      * @throws TaskLimitException if Serina has no more storage space for tasks
      */
-    private static int addTask(String[] tasks, int taskCount, String task) throws TaskLimitException {
+    private static int addTask(Task[] tasks, int taskCount, String taskDescription) throws TaskLimitException {
         if (taskCount >= MAX_TASKS) {
             throw new TaskLimitException(MAX_TASKS_MESSAGE);
         }
 
-        tasks[taskCount] = task;
+        tasks[taskCount] = new Task(taskDescription);
         return taskCount + 1;
+    }
+
+    /**
+     * Returns the task matching the user's one-based task number.
+     *
+     * @throws InvalidTaskNumberException if the given text is not a valid stored task number
+     */
+    private static Task getTask(Task[] tasks, int taskCount, String taskNumberText) throws InvalidTaskNumberException {
+        try {
+            int taskNumber = Integer.parseInt(taskNumberText);
+            if (taskNumber < 1 || taskNumber > taskCount) {
+                throw new InvalidTaskNumberException(INVALID_TASK_NUMBER_MESSAGE);
+            }
+
+            return tasks[taskNumber - 1];
+        } catch (NumberFormatException e) {
+            throw new InvalidTaskNumberException(INVALID_TASK_NUMBER_MESSAGE);
+        }
     }
 
     private static void showGreeting() {
@@ -76,16 +105,31 @@ public class Serina {
         showMessage("added: " + task);
     }
 
+    private static void showMarkedTask(Task task) {
+        printLine();
+        System.out.println(MESSAGE_PREFIX + "Nice! I've marked this task as done:");
+        System.out.println(MESSAGE_PREFIX + "  " + task);
+        printLine();
+    }
+
+    private static void showUnmarkedTask(Task task) {
+        printLine();
+        System.out.println(MESSAGE_PREFIX + "OK, I've marked this task as not done yet:");
+        System.out.println(MESSAGE_PREFIX + "  " + task);
+        printLine();
+    }
+
     private static void showMessage(String message) {
         printLine();
         System.out.println(MESSAGE_PREFIX + message);
         printLine();
     }
 
-    private static void showList(String[] tasks, int taskCount) {
+    private static void showList(Task[] tasks, int taskCount) {
         printLine();
+        System.out.println(MESSAGE_PREFIX + "Here are the tasks in your list:");
         for (int i = 0; i < taskCount; i++) {
-            System.out.println(MESSAGE_PREFIX + (i + 1) + ". " + tasks[i]);
+            System.out.println(MESSAGE_PREFIX + (i + 1) + "." + tasks[i]);
         }
         printLine();
     }
@@ -99,6 +143,15 @@ public class Serina {
      */
     private static class TaskLimitException extends Exception {
         private TaskLimitException(String message) {
+            super(message);
+        }
+    }
+
+    /**
+     * Signals that the user has entered an invalid task number.
+     */
+    private static class InvalidTaskNumberException extends Exception {
+        private InvalidTaskNumberException(String message) {
             super(message);
         }
     }
