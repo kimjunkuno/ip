@@ -9,6 +9,8 @@ public class Serina {
     private static final int MAX_TASKS = 100;
     private static final String MAX_TASKS_MESSAGE = "You've reached the maximum number of tasks.";
     private static final String INVALID_TASK_NUMBER_MESSAGE = "Please provide a valid task number.";
+    private static final String INVALID_DEADLINE_FORMAT_MESSAGE = "Please use: deadline <task> /by <time>";
+    private static final String INVALID_EVENT_FORMAT_MESSAGE = "Please use: event <task> /from <start> /to <end>";
 
     /**
      * Starts Serina and processes user commands from standard input.
@@ -42,14 +44,17 @@ public class Serina {
                         task.markAsNotDone();
                         showUnmarkedTask(task);
                     } else {
-                        taskCount = addTask(tasks, taskCount, input);
-                        showAddedTask(input);
+                        Task task = createTask(input);
+                        taskCount = addTask(tasks, taskCount, task);
+                        showAddedTask(task, taskCount);
                     }
                 } catch (TaskLimitException e) {
                     showMessage(e.getMessage());
                     showGoodbye();
                     break;
                 } catch (InvalidTaskNumberException e) {
+                    showMessage(e.getMessage());
+                } catch (InvalidTaskFormatException e) {
                     showMessage(e.getMessage());
                 }
             }
@@ -61,13 +66,72 @@ public class Serina {
      *
      * @throws TaskLimitException if Serina has no more storage space for tasks
      */
-    private static int addTask(Task[] tasks, int taskCount, String taskDescription) throws TaskLimitException {
+    private static int addTask(Task[] tasks, int taskCount, Task task) throws TaskLimitException {
         if (taskCount >= MAX_TASKS) {
             throw new TaskLimitException(MAX_TASKS_MESSAGE);
         }
 
-        tasks[taskCount] = new Task(taskDescription);
+        tasks[taskCount] = task;
         return taskCount + 1;
+    }
+
+    /**
+     * Creates the correct task type from the user's command.
+     *
+     * @throws InvalidTaskFormatException if a deadline or event command is missing its required fields
+     */
+    private static Task createTask(String input) throws InvalidTaskFormatException {
+        if (input.startsWith("todo ")) {
+            return new Todo(input.substring("todo ".length()));
+        }
+
+        if (input.startsWith("deadline ")) {
+            return createDeadline(input.substring("deadline ".length()));
+        }
+
+        if (input.startsWith("event ")) {
+            return createEvent(input.substring("event ".length()));
+        }
+
+        return new Todo(input);
+    }
+
+    /**
+     * Creates a deadline task from text in the format {@code <task> /by <time>}.
+     */
+    private static Deadline createDeadline(String input) throws InvalidTaskFormatException {
+        int byIndex = input.indexOf(" /by ");
+        if (byIndex == -1) {
+            throw new InvalidTaskFormatException(INVALID_DEADLINE_FORMAT_MESSAGE);
+        }
+
+        String description = input.substring(0, byIndex);
+        String by = input.substring(byIndex + " /by ".length());
+        if (description.isEmpty() || by.isEmpty()) {
+            throw new InvalidTaskFormatException(INVALID_DEADLINE_FORMAT_MESSAGE);
+        }
+
+        return new Deadline(description, by);
+    }
+
+    /**
+     * Creates an event task from text in the format {@code <task> /from <start> /to <end>}.
+     */
+    private static Event createEvent(String input) throws InvalidTaskFormatException {
+        int fromIndex = input.indexOf(" /from ");
+        int toIndex = input.indexOf(" /to ");
+        if (fromIndex == -1 || toIndex == -1 || toIndex < fromIndex) {
+            throw new InvalidTaskFormatException(INVALID_EVENT_FORMAT_MESSAGE);
+        }
+
+        String description = input.substring(0, fromIndex);
+        String from = input.substring(fromIndex + " /from ".length(), toIndex);
+        String to = input.substring(toIndex + " /to ".length());
+        if (description.isEmpty() || from.isEmpty() || to.isEmpty()) {
+            throw new InvalidTaskFormatException(INVALID_EVENT_FORMAT_MESSAGE);
+        }
+
+        return new Event(description, from, to);
     }
 
     /**
@@ -77,7 +141,7 @@ public class Serina {
      */
     private static Task getTask(Task[] tasks, int taskCount, String taskNumberText) throws InvalidTaskNumberException {
         try {
-            int taskNumber = Integer.parseInt(taskNumberText);
+            int taskNumber = Integer.parseInt(taskNumberText.trim());
             if (taskNumber < 1 || taskNumber > taskCount) {
                 throw new InvalidTaskNumberException(INVALID_TASK_NUMBER_MESSAGE);
             }
@@ -101,8 +165,12 @@ public class Serina {
         printLine();
     }
 
-    private static void showAddedTask(String task) {
-        showMessage("added: " + task);
+    private static void showAddedTask(Task task, int taskCount) {
+        printLine();
+        System.out.println(MESSAGE_PREFIX + "Got it. I've added this task:");
+        System.out.println(MESSAGE_PREFIX + "  " + task);
+        System.out.println(MESSAGE_PREFIX + "Now you have " + taskCount + " tasks in the list.");
+        printLine();
     }
 
     private static void showMarkedTask(Task task) {
@@ -152,6 +220,15 @@ public class Serina {
      */
     private static class InvalidTaskNumberException extends Exception {
         private InvalidTaskNumberException(String message) {
+            super(message);
+        }
+    }
+
+    /**
+     * Signals that the user has entered a task command in an invalid format.
+     */
+    private static class InvalidTaskFormatException extends Exception {
+        private InvalidTaskFormatException(String message) {
             super(message);
         }
     }
