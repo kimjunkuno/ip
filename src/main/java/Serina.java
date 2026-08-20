@@ -8,9 +8,19 @@ public class Serina {
     private static final String MESSAGE_PREFIX = "     ";
     private static final int MAX_TASKS = 100;
     private static final String MAX_TASKS_MESSAGE = "You've reached the maximum number of tasks.";
-    private static final String INVALID_TASK_NUMBER_MESSAGE = "Please provide a valid task number.";
-    private static final String INVALID_DEADLINE_FORMAT_MESSAGE = "Please use: deadline <task> /by <time>";
-    private static final String INVALID_EVENT_FORMAT_MESSAGE = "Please use: event <task> /from <start> /to <end>";
+    private static final String UNKNOWN_COMMAND_MESSAGE = "Sorry captain, could you rephrase that for me?";
+    private static final String INVALID_TASK_NUMBER_MESSAGE = "Sorry captain, please provide a valid task number.";
+    private static final String EMPTY_TODO_MESSAGE = "Sorry captain, todo descriptions can't be empty.";
+    private static final String EMPTY_DEADLINE_DESCRIPTION_MESSAGE =
+            "Sorry captain, deadline descriptions can't be empty.";
+    private static final String EMPTY_DEADLINE_BY_MESSAGE = "Sorry captain, deadlines need a /by time.";
+    private static final String EMPTY_EVENT_DESCRIPTION_MESSAGE = "Sorry captain, event descriptions can't be empty.";
+    private static final String EMPTY_EVENT_FROM_MESSAGE = "Sorry captain, events need a /from time.";
+    private static final String EMPTY_EVENT_TO_MESSAGE = "Sorry captain, events need a /to time.";
+    private static final String INVALID_DEADLINE_FORMAT_MESSAGE =
+            "Sorry captain, please use: deadline <task> /by <time>";
+    private static final String INVALID_EVENT_FORMAT_MESSAGE =
+            "Sorry captain, please use: event <task> /from <start> /to <end>";
 
     /**
      * Starts Serina and processes user commands from standard input.
@@ -25,7 +35,7 @@ public class Serina {
             showGreeting();
 
             while (scanner.hasNextLine()) {
-                String input = scanner.nextLine();
+                String input = scanner.nextLine().trim();
 
                 if (input.equals("bye")) {
                     showGoodbye();
@@ -35,12 +45,12 @@ public class Serina {
                 try {
                     if (input.equals("list")) {
                         showList(tasks, taskCount);
-                    } else if (input.startsWith("mark ")) {
-                        Task task = getTask(tasks, taskCount, input.substring("mark ".length()));
+                    } else if (input.equals("mark") || input.startsWith("mark ")) {
+                        Task task = getTask(tasks, taskCount, input.substring("mark".length()));
                         task.markAsDone();
                         showMarkedTask(task);
-                    } else if (input.startsWith("unmark ")) {
-                        Task task = getTask(tasks, taskCount, input.substring("unmark ".length()));
+                    } else if (input.equals("unmark") || input.startsWith("unmark ")) {
+                        Task task = getTask(tasks, taskCount, input.substring("unmark".length()));
                         task.markAsNotDone();
                         showUnmarkedTask(task);
                     } else {
@@ -52,9 +62,7 @@ public class Serina {
                     showMessage(e.getMessage());
                     showGoodbye();
                     break;
-                } catch (InvalidTaskNumberException e) {
-                    showMessage(e.getMessage());
-                } catch (InvalidTaskFormatException e) {
+                } catch (SerinaException e) {
                     showMessage(e.getMessage());
                 }
             }
@@ -78,37 +86,53 @@ public class Serina {
     /**
      * Creates the correct task type from the user's command.
      *
-     * @throws InvalidTaskFormatException if a deadline or event command is missing its required fields
+     * @throws SerinaException if the command is unknown or missing required fields
      */
-    private static Task createTask(String input) throws InvalidTaskFormatException {
-        if (input.startsWith("todo ")) {
-            return new Todo(input.substring("todo ".length()));
+    private static Task createTask(String input) throws SerinaException {
+        if (input.equals("todo") || input.startsWith("todo ")) {
+            return createTodo(input.substring("todo".length()));
         }
 
-        if (input.startsWith("deadline ")) {
-            return createDeadline(input.substring("deadline ".length()));
+        if (input.equals("deadline") || input.startsWith("deadline ")) {
+            return createDeadline(input.substring("deadline".length()));
         }
 
-        if (input.startsWith("event ")) {
-            return createEvent(input.substring("event ".length()));
+        if (input.equals("event") || input.startsWith("event ")) {
+            return createEvent(input.substring("event".length()));
         }
 
-        return new Todo(input);
+        throw new SerinaException(UNKNOWN_COMMAND_MESSAGE);
+    }
+
+    /**
+     * Creates a todo task from the user's command text.
+     */
+    private static Todo createTodo(String input) throws SerinaException {
+        String description = input.trim();
+        if (description.isEmpty()) {
+            throw new SerinaException(EMPTY_TODO_MESSAGE);
+        }
+
+        return new Todo(description);
     }
 
     /**
      * Creates a deadline task from text in the format {@code <task> /by <time>}.
      */
-    private static Deadline createDeadline(String input) throws InvalidTaskFormatException {
-        int byIndex = input.indexOf(" /by ");
+    private static Deadline createDeadline(String input) throws SerinaException {
+        String commandText = input.trim();
+        int byIndex = commandText.indexOf("/by");
         if (byIndex == -1) {
-            throw new InvalidTaskFormatException(INVALID_DEADLINE_FORMAT_MESSAGE);
+            throw new SerinaException(INVALID_DEADLINE_FORMAT_MESSAGE);
         }
 
-        String description = input.substring(0, byIndex);
-        String by = input.substring(byIndex + " /by ".length());
-        if (description.isEmpty() || by.isEmpty()) {
-            throw new InvalidTaskFormatException(INVALID_DEADLINE_FORMAT_MESSAGE);
+        String description = commandText.substring(0, byIndex).trim();
+        String by = commandText.substring(byIndex + "/by".length()).trim();
+        if (description.isEmpty()) {
+            throw new SerinaException(EMPTY_DEADLINE_DESCRIPTION_MESSAGE);
+        }
+        if (by.isEmpty()) {
+            throw new SerinaException(EMPTY_DEADLINE_BY_MESSAGE);
         }
 
         return new Deadline(description, by);
@@ -117,18 +141,25 @@ public class Serina {
     /**
      * Creates an event task from text in the format {@code <task> /from <start> /to <end>}.
      */
-    private static Event createEvent(String input) throws InvalidTaskFormatException {
-        int fromIndex = input.indexOf(" /from ");
-        int toIndex = input.indexOf(" /to ");
+    private static Event createEvent(String input) throws SerinaException {
+        String commandText = input.trim();
+        int fromIndex = commandText.indexOf("/from");
+        int toIndex = commandText.indexOf("/to");
         if (fromIndex == -1 || toIndex == -1 || toIndex < fromIndex) {
-            throw new InvalidTaskFormatException(INVALID_EVENT_FORMAT_MESSAGE);
+            throw new SerinaException(INVALID_EVENT_FORMAT_MESSAGE);
         }
 
-        String description = input.substring(0, fromIndex);
-        String from = input.substring(fromIndex + " /from ".length(), toIndex);
-        String to = input.substring(toIndex + " /to ".length());
-        if (description.isEmpty() || from.isEmpty() || to.isEmpty()) {
-            throw new InvalidTaskFormatException(INVALID_EVENT_FORMAT_MESSAGE);
+        String description = commandText.substring(0, fromIndex).trim();
+        String from = commandText.substring(fromIndex + "/from".length(), toIndex).trim();
+        String to = commandText.substring(toIndex + "/to".length()).trim();
+        if (description.isEmpty()) {
+            throw new SerinaException(EMPTY_EVENT_DESCRIPTION_MESSAGE);
+        }
+        if (from.isEmpty()) {
+            throw new SerinaException(EMPTY_EVENT_FROM_MESSAGE);
+        }
+        if (to.isEmpty()) {
+            throw new SerinaException(EMPTY_EVENT_TO_MESSAGE);
         }
 
         return new Event(description, from, to);
@@ -137,18 +168,18 @@ public class Serina {
     /**
      * Returns the task matching the user's one-based task number.
      *
-     * @throws InvalidTaskNumberException if the given text is not a valid stored task number
+     * @throws SerinaException if the given text is not a valid stored task number
      */
-    private static Task getTask(Task[] tasks, int taskCount, String taskNumberText) throws InvalidTaskNumberException {
+    private static Task getTask(Task[] tasks, int taskCount, String taskNumberText) throws SerinaException {
         try {
             int taskNumber = Integer.parseInt(taskNumberText.trim());
             if (taskNumber < 1 || taskNumber > taskCount) {
-                throw new InvalidTaskNumberException(INVALID_TASK_NUMBER_MESSAGE);
+                throw new SerinaException(INVALID_TASK_NUMBER_MESSAGE);
             }
 
             return tasks[taskNumber - 1];
         } catch (NumberFormatException e) {
-            throw new InvalidTaskNumberException(INVALID_TASK_NUMBER_MESSAGE);
+            throw new SerinaException(INVALID_TASK_NUMBER_MESSAGE);
         }
     }
 
@@ -209,26 +240,8 @@ public class Serina {
     /**
      * Signals that Serina cannot store any more tasks in memory.
      */
-    private static class TaskLimitException extends Exception {
+    private static class TaskLimitException extends SerinaException {
         private TaskLimitException(String message) {
-            super(message);
-        }
-    }
-
-    /**
-     * Signals that the user has entered an invalid task number.
-     */
-    private static class InvalidTaskNumberException extends Exception {
-        private InvalidTaskNumberException(String message) {
-            super(message);
-        }
-    }
-
-    /**
-     * Signals that the user has entered a task command in an invalid format.
-     */
-    private static class InvalidTaskFormatException extends Exception {
-        private InvalidTaskFormatException(String message) {
             super(message);
         }
     }

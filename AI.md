@@ -1,6 +1,6 @@
 # AI Contribution Log
 
-This file records the work Codex performed on this project. It is organized according to the four requested feature levels.
+This file records the work Codex performed on this project. It is organized according to the requested feature levels.
 
 ## Level 1 (Echo)
 
@@ -95,3 +95,25 @@ Files changed:
 - `src/main/java/Todo.java`
 - `src/main/java/Deadline.java`
 - `src/main/java/Event.java`
+
+## Level 5 (Handle Errors)
+
+Instruction:
+
+Teach the chatbot to deal with errors such as incorrect inputs entered by the user. Use exceptions to handle errors, including a custom exception class named to match the chatbot.
+
+What Codex did:
+
+- Coding contribution: I added a custom `SerinaException` class and changed the command parser so invalid user input is reported through exceptions instead of being silently accepted. I also made `Serina.java` catch these exceptions in one place and print friendly messages without crashing the chatbot.
+- Added `SerinaException` for chatbot-specific errors.
+- Made unknown commands such as `blah` produce `Sorry captain, could you rephrase that for me?`.
+- Made empty todo commands such as `todo` produce `Sorry captain, todo descriptions can't be empty.`.
+- Added clearer error messages for invalid `deadline`, `event`, `mark`, and `unmark` inputs.
+- Stopped treating unrecognized input as a default todo task.
+- Kept the 100-task-limit exception behavior, with Serina still printing the goodbye message before exiting.
+
+Files changed:
+
+- `src/main/java/Serina.java`
+- `src/main/java/SerinaException.java`
+- `AI.md`
