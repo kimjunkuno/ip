@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -29,8 +31,7 @@ public class Serina {
      */
     public static void main(String[] args) {
         try (Scanner scanner = new Scanner(System.in)) {
-            Task[] tasks = new Task[MAX_TASKS];
-            int taskCount = 0;
+            List<Task> tasks = new ArrayList<>();
 
             showGreeting();
 
@@ -44,19 +45,22 @@ public class Serina {
 
                 try {
                     if (input.equals("list")) {
-                        showList(tasks, taskCount);
+                        showList(tasks);
                     } else if (input.equals("mark") || input.startsWith("mark ")) {
-                        Task task = getTask(tasks, taskCount, input.substring("mark".length()));
+                        Task task = getTask(tasks, input.substring("mark".length()));
                         task.markAsDone();
                         showMarkedTask(task);
                     } else if (input.equals("unmark") || input.startsWith("unmark ")) {
-                        Task task = getTask(tasks, taskCount, input.substring("unmark".length()));
+                        Task task = getTask(tasks, input.substring("unmark".length()));
                         task.markAsNotDone();
                         showUnmarkedTask(task);
+                    } else if (input.equals("delete") || input.startsWith("delete ")) {
+                        Task task = deleteTask(tasks, input.substring("delete".length()));
+                        showDeletedTask(task, tasks.size());
                     } else {
                         Task task = createTask(input);
-                        taskCount = addTask(tasks, taskCount, task);
-                        showAddedTask(task, taskCount);
+                        addTask(tasks, task);
+                        showAddedTask(task, tasks.size());
                     }
                 } catch (TaskLimitException e) {
                     showMessage(e.getMessage());
@@ -70,17 +74,16 @@ public class Serina {
     }
 
     /**
-     * Stores a task and returns the updated number of stored tasks.
+     * Stores a task in the task list.
      *
      * @throws TaskLimitException if Serina has no more storage space for tasks
      */
-    private static int addTask(Task[] tasks, int taskCount, Task task) throws TaskLimitException {
-        if (taskCount >= MAX_TASKS) {
+    private static void addTask(List<Task> tasks, Task task) throws TaskLimitException {
+        if (tasks.size() >= MAX_TASKS) {
             throw new TaskLimitException(MAX_TASKS_MESSAGE);
         }
 
-        tasks[taskCount] = task;
-        return taskCount + 1;
+        tasks.add(task);
     }
 
     /**
@@ -170,14 +173,32 @@ public class Serina {
      *
      * @throws SerinaException if the given text is not a valid stored task number
      */
-    private static Task getTask(Task[] tasks, int taskCount, String taskNumberText) throws SerinaException {
+    private static Task getTask(List<Task> tasks, String taskNumberText) throws SerinaException {
+        return tasks.get(getTaskIndex(tasks, taskNumberText));
+    }
+
+    /**
+     * Removes and returns the task matching the user's one-based task number.
+     *
+     * @throws SerinaException if the given text is not a valid stored task number
+     */
+    private static Task deleteTask(List<Task> tasks, String taskNumberText) throws SerinaException {
+        return tasks.remove(getTaskIndex(tasks, taskNumberText));
+    }
+
+    /**
+     * Converts the user's one-based task number to a zero-based list index.
+     *
+     * @throws SerinaException if the given text is not a valid stored task number
+     */
+    private static int getTaskIndex(List<Task> tasks, String taskNumberText) throws SerinaException {
         try {
             int taskNumber = Integer.parseInt(taskNumberText.trim());
-            if (taskNumber < 1 || taskNumber > taskCount) {
+            if (taskNumber < 1 || taskNumber > tasks.size()) {
                 throw new SerinaException(INVALID_TASK_NUMBER_MESSAGE);
             }
 
-            return tasks[taskNumber - 1];
+            return taskNumber - 1;
         } catch (NumberFormatException e) {
             throw new SerinaException(INVALID_TASK_NUMBER_MESSAGE);
         }
@@ -218,17 +239,25 @@ public class Serina {
         printLine();
     }
 
+    private static void showDeletedTask(Task task, int taskCount) {
+        printLine();
+        System.out.println(MESSAGE_PREFIX + "Noted. I've removed this task:");
+        System.out.println(MESSAGE_PREFIX + "  " + task);
+        System.out.println(MESSAGE_PREFIX + "Now you have " + taskCount + " tasks in the list.");
+        printLine();
+    }
+
     private static void showMessage(String message) {
         printLine();
         System.out.println(MESSAGE_PREFIX + message);
         printLine();
     }
 
-    private static void showList(Task[] tasks, int taskCount) {
+    private static void showList(List<Task> tasks) {
         printLine();
         System.out.println(MESSAGE_PREFIX + "Here are the tasks in your list:");
-        for (int i = 0; i < taskCount; i++) {
-            System.out.println(MESSAGE_PREFIX + (i + 1) + "." + tasks[i]);
+        for (int i = 0; i < tasks.size(); i++) {
+            System.out.println(MESSAGE_PREFIX + (i + 1) + "." + tasks.get(i));
         }
         printLine();
     }

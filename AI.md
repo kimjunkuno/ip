@@ -77,12 +77,12 @@ Add support for tracking three types of tasks:
 
 What Codex did:
 
-- Coding contribution: I refactored the task model into an inheritance structure where `Task` holds the shared description and done status, while `Todo`, `Deadline`, and `Event` provide their own type icons and extra display details. I also added parsing logic that creates the correct subclass while still storing every item in a single `Task[]` array.
+- Coding contribution: I refactored the task model into an inheritance structure where `Task` holds the shared description and done status, while `Todo`, `Deadline`, and `Event` provide their own type icons and extra display details. I also added parsing logic that creates the correct subclass while storing every item through the shared `Task` type.
 - Refactored `Task` into an abstract base class.
 - Added a `Todo` subclass for tasks without date or time information.
 - Added a `Deadline` subclass for tasks with `/by` information.
 - Added an `Event` subclass for tasks with `/from` and `/to` information.
-- Kept all tasks stored in a polymorphic `Task[]` array.
+- Kept all tasks stored through the shared `Task` type so `Todo`, `Deadline`, and `Event` objects could be handled polymorphically.
 - Added parsing for `todo`, `deadline`, and `event` commands.
 - Kept date and time values as plain strings.
 - Updated list, mark, and unmark output to show task type icons such as `[T]`, `[D]`, and `[E]`.
@@ -116,4 +116,24 @@ Files changed:
 
 - `src/main/java/Serina.java`
 - `src/main/java/SerinaException.java`
+- `AI.md`
+
+## Level 6 (Delete)
+
+Instruction:
+
+Add support for deleting tasks from the list. Use Java Collections classes, such as `ArrayList<Task>`, for storing data.
+
+What Codex did:
+
+- Coding contribution: I refactored Serina's task storage from a fixed `Task[]` array plus manual counter into an `ArrayList<Task>`. This made deletion simpler because Serina can remove the selected task directly and the remaining tasks shift automatically.
+- Added support for `delete <number>`.
+- Added a helper method that removes and returns the selected task.
+- Reused the same task-number validation logic used by `mark` and `unmark`.
+- Added a delete confirmation message that shows the removed task and the updated task count.
+- Kept the earlier 100-task limit behavior while using `ArrayList<Task>` for storage.
+
+Files changed:
+
+- `src/main/java/Serina.java`
 - `AI.md`

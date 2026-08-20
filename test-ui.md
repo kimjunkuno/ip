@@ -1,6 +1,6 @@
 # Serina UI Test Cases
 
-This file records console-based test cases for Serina after Levels 1-5. Each test lists the user input sequence and the key output that should appear.
+This file records console-based test cases for Serina after Levels 1-6. Each test lists the user input sequence and the key output that should appear.
 
 ## How To Use
 
@@ -317,6 +317,94 @@ mark abc
 unmark 1
 todo read book
 mark 2
+bye
+```
+
+Expected key output:
+
+```text
+Sorry captain, please provide a valid task number.
+Sorry captain, please provide a valid task number.
+Sorry captain, please provide a valid task number.
+Got it. I've added this task:
+  [T][ ] read book
+Now you have 1 tasks in the list.
+Sorry captain, please provide a valid task number.
+Bye. Hope to see you again soon!
+```
+
+## Level 6 (Delete)
+
+### Test 6.1 - Delete A Task From The Middle
+
+Input:
+
+```text
+todo read book
+deadline return book /by June 6th
+event project meeting /from Aug 6th 2pm /to 4pm
+todo join sports club
+todo borrow book
+mark 1
+mark 2
+mark 4
+delete 3
+list
+bye
+```
+
+Expected key output:
+
+```text
+Noted. I've removed this task:
+  [E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+Now you have 4 tasks in the list.
+Here are the tasks in your list:
+1.[T][X] read book
+2.[D][X] return book (by: June 6th)
+3.[T][X] join sports club
+4.[T][ ] borrow book
+Bye. Hope to see you again soon!
+```
+
+### Test 6.2 - Delete First And Last Tasks
+
+Input:
+
+```text
+todo first task
+todo second task
+todo third task
+delete 1
+delete 2
+list
+bye
+```
+
+Expected key output:
+
+```text
+Noted. I've removed this task:
+  [T][ ] first task
+Now you have 2 tasks in the list.
+Noted. I've removed this task:
+  [T][ ] third task
+Now you have 1 tasks in the list.
+Here are the tasks in your list:
+1.[T][ ] second task
+Bye. Hope to see you again soon!
+```
+
+### Test 6.3 - Invalid Delete Commands
+
+Input:
+
+```text
+delete
+delete abc
+delete 1
+todo read book
+delete 2
 bye
 ```
 
