@@ -137,3 +137,35 @@ Files changed:
 
 - `src/main/java/Serina.java`
 - `AI.md`
+
+## Level A-enums
+
+Instruction:
+
+Use Java enums where they are a natural fit. Amend exception handling to reflect the enum change and update the UI test cases.
+
+What Codex did:
+
+- Coding contribution: I introduced enums for fixed sets of values that should not be represented by loose strings or booleans. Task type icons now come from `TaskType`, task completion state now comes from `TaskStatus`, and Serina-specific error messages now come from `SerinaError`.
+- Added `TaskType` for `TODO`, `DEADLINE`, and `EVENT` task icons.
+- Added `TaskStatus` for `DONE` and `NOT_DONE` status icons.
+- Added `SerinaError` to centralize error messages and whether an error should exit the chatbot.
+- Updated `Task` so it uses `TaskStatus` instead of a boolean done flag.
+- Updated `Todo`, `Deadline`, and `Event` so they return a `TaskType` instead of hardcoded type icon strings.
+- Updated `SerinaException` so it stores a `SerinaError` enum value.
+- Simplified exception handling in `Serina.java` so the catch block checks `e.shouldExit()` instead of catching a separate task-limit exception subclass.
+- Updated `test-ui.md` with enum regression tests.
+
+Files changed:
+
+- `src/main/java/Serina.java`
+- `src/main/java/Task.java`
+- `src/main/java/Todo.java`
+- `src/main/java/Deadline.java`
+- `src/main/java/Event.java`
+- `src/main/java/SerinaException.java`
+- `src/main/java/TaskType.java`
+- `src/main/java/TaskStatus.java`
+- `src/main/java/SerinaError.java`
+- `AI.md`
+- `test-ui.md`

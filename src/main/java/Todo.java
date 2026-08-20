@@ -12,7 +12,7 @@ public class Todo extends Task {
     }
 
     @Override
-    protected String getTaskTypeIcon() {
-        return "T";
+    protected TaskType getTaskType() {
+        return TaskType.TODO;
     }
 }

@@ -1,6 +1,6 @@
 # Serina UI Test Cases
 
-This file records console-based test cases for Serina after Levels 1-6. Each test lists the user input sequence and the key output that should appear.
+This file records console-based test cases for Serina after Levels 1-6 and A-enums. Each test lists the user input sequence and the key output that should appear.
 
 ## How To Use
 
@@ -418,5 +418,79 @@ Got it. I've added this task:
   [T][ ] read book
 Now you have 1 tasks in the list.
 Sorry captain, please provide a valid task number.
+Bye. Hope to see you again soon!
+```
+
+## Level A-enums
+
+### Test A.1 - Enum-Backed Task Type And Status Display
+
+Input:
+
+```text
+todo enum todo
+deadline enum deadline /by Friday
+event enum event /from 1pm /to 2pm
+mark 1
+mark 2
+mark 3
+list
+bye
+```
+
+Expected key output:
+
+```text
+Here are the tasks in your list:
+1.[T][X] enum todo
+2.[D][X] enum deadline (by: Friday)
+3.[E][X] enum event (from: 1pm to: 2pm)
+Bye. Hope to see you again soon!
+```
+
+### Test A.2 - Enum-Backed Error Messages Continue Normally
+
+Input:
+
+```text
+todo
+blah
+todo recovered task
+list
+bye
+```
+
+Expected key output:
+
+```text
+Sorry captain, todo descriptions can't be empty.
+Sorry captain, could you rephrase that for me?
+Got it. I've added this task:
+  [T][ ] recovered task
+Now you have 1 tasks in the list.
+Here are the tasks in your list:
+1.[T][ ] recovered task
+Bye. Hope to see you again soon!
+```
+
+### Test A.3 - Enum-Backed Exit Error Still Says Bye
+
+Input:
+
+```text
+todo task 1
+todo task 2
+...
+todo task 100
+todo task 101
+```
+
+Expected key output:
+
+```text
+Got it. I've added this task:
+  [T][ ] task 100
+Now you have 100 tasks in the list.
+You've reached the maximum number of tasks.
 Bye. Hope to see you again soon!
 ```

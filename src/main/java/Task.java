@@ -3,7 +3,7 @@
  */
 public abstract class Task {
     private final String description;
-    private boolean isDone;
+    private TaskStatus status;
 
     /**
      * Creates a task with the given description.
@@ -12,21 +12,21 @@ public abstract class Task {
      */
     public Task(String description) {
         this.description = description;
-        this.isDone = false;
+        this.status = TaskStatus.NOT_DONE;
     }
 
     /**
      * Marks this task as done.
      */
     public void markAsDone() {
-        isDone = true;
+        status = TaskStatus.DONE;
     }
 
     /**
      * Marks this task as not done.
      */
     public void markAsNotDone() {
-        isDone = false;
+        status = TaskStatus.NOT_DONE;
     }
 
     /**
@@ -40,13 +40,13 @@ public abstract class Task {
      * Returns the status icon used when displaying this task.
      */
     public String getStatusIcon() {
-        return isDone ? "X" : " ";
+        return status.getIcon();
     }
 
     /**
-     * Returns the icon that identifies the task type.
+     * Returns the type of this task.
      */
-    protected abstract String getTaskTypeIcon();
+    protected abstract TaskType getTaskType();
 
     /**
      * Returns extra details to display after the task description.
@@ -57,6 +57,6 @@ public abstract class Task {
 
     @Override
     public String toString() {
-        return "[" + getTaskTypeIcon() + "][" + getStatusIcon() + "] " + description + getDetails();
+        return "[" + getTaskType().getIcon() + "][" + getStatusIcon() + "] " + description + getDetails();
     }
 }

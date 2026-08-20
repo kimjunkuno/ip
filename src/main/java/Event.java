@@ -19,8 +19,8 @@ public class Event extends Task {
     }
 
     @Override
-    protected String getTaskTypeIcon() {
-        return "E";
+    protected TaskType getTaskType() {
+        return TaskType.EVENT;
     }
 
     @Override

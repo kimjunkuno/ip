@@ -9,20 +9,6 @@ public class Serina {
     private static final String LINE = "    ____________________________________________________________";
     private static final String MESSAGE_PREFIX = "     ";
     private static final int MAX_TASKS = 100;
-    private static final String MAX_TASKS_MESSAGE = "You've reached the maximum number of tasks.";
-    private static final String UNKNOWN_COMMAND_MESSAGE = "Sorry captain, could you rephrase that for me?";
-    private static final String INVALID_TASK_NUMBER_MESSAGE = "Sorry captain, please provide a valid task number.";
-    private static final String EMPTY_TODO_MESSAGE = "Sorry captain, todo descriptions can't be empty.";
-    private static final String EMPTY_DEADLINE_DESCRIPTION_MESSAGE =
-            "Sorry captain, deadline descriptions can't be empty.";
-    private static final String EMPTY_DEADLINE_BY_MESSAGE = "Sorry captain, deadlines need a /by time.";
-    private static final String EMPTY_EVENT_DESCRIPTION_MESSAGE = "Sorry captain, event descriptions can't be empty.";
-    private static final String EMPTY_EVENT_FROM_MESSAGE = "Sorry captain, events need a /from time.";
-    private static final String EMPTY_EVENT_TO_MESSAGE = "Sorry captain, events need a /to time.";
-    private static final String INVALID_DEADLINE_FORMAT_MESSAGE =
-            "Sorry captain, please use: deadline <task> /by <time>";
-    private static final String INVALID_EVENT_FORMAT_MESSAGE =
-            "Sorry captain, please use: event <task> /from <start> /to <end>";
 
     /**
      * Starts Serina and processes user commands from standard input.
@@ -62,12 +48,12 @@ public class Serina {
                         addTask(tasks, task);
                         showAddedTask(task, tasks.size());
                     }
-                } catch (TaskLimitException e) {
-                    showMessage(e.getMessage());
-                    showGoodbye();
-                    break;
                 } catch (SerinaException e) {
                     showMessage(e.getMessage());
+                    if (e.shouldExit()) {
+                        showGoodbye();
+                        break;
+                    }
                 }
             }
         }
@@ -76,11 +62,11 @@ public class Serina {
     /**
      * Stores a task in the task list.
      *
-     * @throws TaskLimitException if Serina has no more storage space for tasks
+     * @throws SerinaException if Serina has no more storage space for tasks
      */
-    private static void addTask(List<Task> tasks, Task task) throws TaskLimitException {
+    private static void addTask(List<Task> tasks, Task task) throws SerinaException {
         if (tasks.size() >= MAX_TASKS) {
-            throw new TaskLimitException(MAX_TASKS_MESSAGE);
+            throw new SerinaException(SerinaError.MAX_TASKS);
         }
 
         tasks.add(task);
@@ -104,7 +90,7 @@ public class Serina {
             return createEvent(input.substring("event".length()));
         }
 
-        throw new SerinaException(UNKNOWN_COMMAND_MESSAGE);
+        throw new SerinaException(SerinaError.UNKNOWN_COMMAND);
     }
 
     /**
@@ -113,7 +99,7 @@ public class Serina {
     private static Todo createTodo(String input) throws SerinaException {
         String description = input.trim();
         if (description.isEmpty()) {
-            throw new SerinaException(EMPTY_TODO_MESSAGE);
+            throw new SerinaException(SerinaError.EMPTY_TODO);
         }
 
         return new Todo(description);
@@ -126,16 +112,16 @@ public class Serina {
         String commandText = input.trim();
         int byIndex = commandText.indexOf("/by");
         if (byIndex == -1) {
-            throw new SerinaException(INVALID_DEADLINE_FORMAT_MESSAGE);
+            throw new SerinaException(SerinaError.INVALID_DEADLINE_FORMAT);
         }
 
         String description = commandText.substring(0, byIndex).trim();
         String by = commandText.substring(byIndex + "/by".length()).trim();
         if (description.isEmpty()) {
-            throw new SerinaException(EMPTY_DEADLINE_DESCRIPTION_MESSAGE);
+            throw new SerinaException(SerinaError.EMPTY_DEADLINE_DESCRIPTION);
         }
         if (by.isEmpty()) {
-            throw new SerinaException(EMPTY_DEADLINE_BY_MESSAGE);
+            throw new SerinaException(SerinaError.EMPTY_DEADLINE_BY);
         }
 
         return new Deadline(description, by);
@@ -149,20 +135,20 @@ public class Serina {
         int fromIndex = commandText.indexOf("/from");
         int toIndex = commandText.indexOf("/to");
         if (fromIndex == -1 || toIndex == -1 || toIndex < fromIndex) {
-            throw new SerinaException(INVALID_EVENT_FORMAT_MESSAGE);
+            throw new SerinaException(SerinaError.INVALID_EVENT_FORMAT);
         }
 
         String description = commandText.substring(0, fromIndex).trim();
         String from = commandText.substring(fromIndex + "/from".length(), toIndex).trim();
         String to = commandText.substring(toIndex + "/to".length()).trim();
         if (description.isEmpty()) {
-            throw new SerinaException(EMPTY_EVENT_DESCRIPTION_MESSAGE);
+            throw new SerinaException(SerinaError.EMPTY_EVENT_DESCRIPTION);
         }
         if (from.isEmpty()) {
-            throw new SerinaException(EMPTY_EVENT_FROM_MESSAGE);
+            throw new SerinaException(SerinaError.EMPTY_EVENT_FROM);
         }
         if (to.isEmpty()) {
-            throw new SerinaException(EMPTY_EVENT_TO_MESSAGE);
+            throw new SerinaException(SerinaError.EMPTY_EVENT_TO);
         }
 
         return new Event(description, from, to);
@@ -195,12 +181,12 @@ public class Serina {
         try {
             int taskNumber = Integer.parseInt(taskNumberText.trim());
             if (taskNumber < 1 || taskNumber > tasks.size()) {
-                throw new SerinaException(INVALID_TASK_NUMBER_MESSAGE);
+                throw new SerinaException(SerinaError.INVALID_TASK_NUMBER);
             }
 
             return taskNumber - 1;
         } catch (NumberFormatException e) {
-            throw new SerinaException(INVALID_TASK_NUMBER_MESSAGE);
+            throw new SerinaException(SerinaError.INVALID_TASK_NUMBER);
         }
     }
 
@@ -264,14 +250,5 @@ public class Serina {
 
     private static void printLine() {
         System.out.println(LINE);
-    }
-
-    /**
-     * Signals that Serina cannot store any more tasks in memory.
-     */
-    private static class TaskLimitException extends SerinaException {
-        private TaskLimitException(String message) {
-            super(message);
-        }
     }
 }
