@@ -287,6 +287,31 @@ Files changed:
 - `AI.md`
 - `test-ui.md`
 
+## Level 9 (Find)
+
+Instruction:
+
+Give users a way to find tasks by searching for a keyword in each task description.
+
+What Codex did:
+
+- Changed the `find` command from the earlier date-search extension to description keyword search.
+- Added case-insensitive substring matching so commands such as `find BOOK` can match `read book`.
+- Kept matching focused on task descriptions rather than task types, statuses, or date metadata.
+- Preserved the original task-list order when displaying multiple matches.
+- Added an error for an empty `find` keyword and updated the help command.
+- Added focused JUnit coverage for matching behavior and Level 9 console cases in `test-ui.md`.
+
+Files changed:
+
+- `src/main/java/serina/Serina.java`
+- `src/main/java/serina/exception/SerinaError.java`
+- `src/main/java/serina/task/TaskList.java`
+- `src/main/java/serina/ui/Ui.java`
+- `src/test/java/serina/task/TaskListTest.java`
+- `AI.md`
+- `test-ui.md`
+
 ## Help Command
 
 Instruction:
@@ -323,10 +348,13 @@ What Codex did:
 - Tested inclusive event date matching at and around both date boundaries.
 - Tested user-facing event formatting for both not-done and done tasks.
 - Tested save-file serialization, including completion status and escaping special characters.
+- Added `TaskListTest` coverage for case-insensitive keyword searches, partial matches, result ordering, surrounding
+  whitespace, description-only matching, and searches with no results.
 
 Files changed:
 
 - `src/test/java/serina/task/EventTest.java`
+- `src/test/java/serina/task/TaskListTest.java`
 - `AI.md`
 
 ## Level A-Javadoc

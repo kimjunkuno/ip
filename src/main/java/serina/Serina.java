@@ -62,8 +62,8 @@ public class Serina {
                         Storage.saveTasks(tasks.asList());
                         ui.showDeletedTask(task, tasks.size());
                     } else if (input.equals("find") || input.startsWith("find ")) {
-                        LocalDate date = parseFindDate(input.substring("find".length()));
-                        List<Task> matchingTasks = tasks.find(date);
+                        String keyword = parseFindKeyword(input.substring("find".length()));
+                        List<Task> matchingTasks = tasks.find(keyword);
                         ui.showMatchingTasks(matchingTasks);
                     } else {
                         Task task = createTask(input);
@@ -187,17 +187,18 @@ public class Serina {
     }
 
     /**
-     * Parses the date entered in a find command.
+     * Returns the keyword entered in a find command.
      *
-     * @throws SerinaException If the date is empty or not in the expected format.
+     * @param keywordText Keyword text from the user command.
+     * @return The trimmed keyword.
+     * @throws SerinaException If the keyword is empty.
      */
-    private static LocalDate parseFindDate(String dateText) throws SerinaException {
-        String trimmedDateText = dateText.trim();
-        if (trimmedDateText.isEmpty()) {
-            throw new SerinaException(SerinaError.EMPTY_FIND_DATE);
+    private static String parseFindKeyword(String keywordText) throws SerinaException {
+        String keyword = keywordText.trim();
+        if (keyword.isEmpty()) {
+            throw new SerinaException(SerinaError.EMPTY_FIND_KEYWORD);
         }
 
-        return DateParser.parseInputDate(trimmedDateText);
+        return keyword;
     }
-
 }

@@ -23,8 +23,8 @@ public enum SerinaError {
     EMPTY_EVENT_FROM("Sorry captain, events need a /from date.", false),
     /** Indicates that an event end date is empty. */
     EMPTY_EVENT_TO("Sorry captain, events need a /to date.", false),
-    /** Indicates that a find command has no date. */
-    EMPTY_FIND_DATE("Sorry captain, find needs a date.", false),
+    /** Indicates that a find command has no keyword. */
+    EMPTY_FIND_KEYWORD("Sorry captain, find needs a keyword.", false),
     /** Indicates that a deadline command has an invalid structure. */
     INVALID_DEADLINE_FORMAT("Sorry captain, please use: deadline <task> /by <date>", false),
     /** Indicates that an event command has an invalid structure. */

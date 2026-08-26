@@ -1,6 +1,7 @@
 # Serina UI Test Cases
 
-This file records console-based test cases for Serina after Levels 1-8, A-enums, and storage features. Each test lists the user input sequence and the key output that should appear.
+This file records console-based test cases for Serina after Levels 1-9, A-enums, and storage features. Each test
+lists the user input sequence and the key output that should appear.
 
 ## How To Use
 
@@ -828,8 +829,6 @@ Input:
 ```text
 deadline return book /by 2/12/2019 1800
 event meeting /from 2019-10-20 /to 2019-10-19
-find
-find 2019/10/15
 bye
 ```
 
@@ -838,20 +837,22 @@ Expected key output:
 ```text
 Sorry captain, dates must be in yyyy-MM-dd format.
 Sorry captain, event end date can't be before its start date.
-Sorry captain, find needs a date.
-Sorry captain, dates must be in yyyy-MM-dd format.
 Bye. Hope to see you again soon!
 ```
 
-### Test 8.3 - Find Tasks Occurring On A Date
+## Level 9 (Find)
+
+### Test 9.1 - Find Matching Tasks By Keyword
 
 Input:
 
 ```text
-deadline return book /by 2019-12-02
-event orientation week /from 2019-12-01 /to 2019-12-03
 todo read book
-find 2019-12-02
+deadline return book /by 2019-12-02
+event project meeting /from 2019-12-01 /to 2019-12-03
+mark 1
+mark 2
+find book
 bye
 ```
 
@@ -859,8 +860,60 @@ Expected key output:
 
 ```text
 Here are the matching tasks in your list:
-1.[D][ ] return book (by: Dec 2 2019)
-2.[E][ ] orientation week (from: Dec 1 2019 to: Dec 3 2019)
+1.[T][X] read book
+2.[D][X] return book (by: Dec 2 2019)
+Bye. Hope to see you again soon!
+```
+
+### Test 9.2 - Find Is Case-Insensitive And Supports Partial Keywords
+
+Input:
+
+```text
+todo Read Textbook
+todo buy bread
+find BOOK
+bye
+```
+
+Expected key output:
+
+```text
+Here are the matching tasks in your list:
+1.[T][ ] Read Textbook
+Bye. Hope to see you again soon!
+```
+
+### Test 9.3 - Find With No Matches
+
+Input:
+
+```text
+todo read book
+find exercise
+bye
+```
+
+Expected key output:
+
+```text
+Here are the matching tasks in your list:
+Bye. Hope to see you again soon!
+```
+
+### Test 9.4 - Reject Empty Find Keyword
+
+Input:
+
+```text
+find
+bye
+```
+
+Expected key output:
+
+```text
+Sorry captain, find needs a keyword.
 Bye. Hope to see you again soon!
 ```
 
@@ -887,7 +940,7 @@ list - show all tasks
 mark <number> - mark a task as done
 unmark <number> - mark a task as not done
 delete <number> - remove a task
-find <yyyy-MM-dd> - find tasks occurring on a date
+find <keyword> - find tasks containing a keyword
 bye - exit Serina
 Bye. Hope to see you again soon!
 ```

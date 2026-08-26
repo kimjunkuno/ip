@@ -1,9 +1,9 @@
 package serina.task;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import serina.exception.SerinaError;
 import serina.exception.SerinaException;
@@ -69,15 +69,17 @@ public class TaskList {
     }
 
     /**
-     * Returns tasks that occur on the given date.
+     * Returns tasks whose descriptions contain the given keyword, ignoring case.
      *
-     * @param date Date to match.
-     * @return Tasks occurring on {@code date}.
+     * @param keyword Keyword to match against task descriptions.
+     * @return Matching tasks in their original list order.
      */
-    public List<Task> find(LocalDate date) {
+    public List<Task> find(String keyword) {
+        String normalizedKeyword = keyword.trim().toLowerCase(Locale.ROOT);
         List<Task> matchingTasks = new ArrayList<>();
         for (Task task : tasks) {
-            if (task.isOccurringOn(date)) {
+            String normalizedDescription = task.getDescription().toLowerCase(Locale.ROOT);
+            if (normalizedDescription.contains(normalizedKeyword)) {
                 matchingTasks.add(task);
             }
         }

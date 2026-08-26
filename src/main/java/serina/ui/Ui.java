@@ -65,7 +65,7 @@ public class Ui implements AutoCloseable {
         System.out.println(MESSAGE_PREFIX + "mark <number> - mark a task as done");
         System.out.println(MESSAGE_PREFIX + "unmark <number> - mark a task as not done");
         System.out.println(MESSAGE_PREFIX + "delete <number> - remove a task");
-        System.out.println(MESSAGE_PREFIX + "find <yyyy-MM-dd> - find tasks occurring on a date");
+        System.out.println(MESSAGE_PREFIX + "find <keyword> - find tasks containing a keyword");
         System.out.println(MESSAGE_PREFIX + "bye - exit Serina");
         printLine();
     }
