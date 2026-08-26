@@ -169,3 +169,91 @@ Files changed:
 - `src/main/java/SerinaError.java`
 - `AI.md`
 - `test-ui.md`
+
+## Level 7 (Save)
+
+Instruction:
+
+Save the tasks on the hard disk automatically whenever the task list changes. For now, implement only the minimal happy path for writing to the file; loading from the file will be implemented later.
+
+What Codex did:
+
+- Coding contribution: I added a small storage layer that writes the current task list to `data/serina.txt` after commands that change the list. This covers adding, marking, unmarking, and deleting tasks while leaving startup loading for a later level.
+- Added `Storage` to handle creating the `data` folder and writing task lines to disk.
+- Added `toFileString()` behavior to `Task` so all task types share the same save format.
+- Added deadline and event save fields so their `/by`, `/from`, and `/to` values are preserved in the file.
+- Extended `TaskStatus` so done status saves as `1` and not-done status saves as `0`.
+- Added a Serina-specific save error in `SerinaError` for unexpected write failures.
+- Updated `test-ui.md` with save-file test cases.
+
+Files changed:
+
+- `src/main/java/Serina.java`
+- `src/main/java/Task.java`
+- `src/main/java/TaskStatus.java`
+- `src/main/java/Deadline.java`
+- `src/main/java/Event.java`
+- `src/main/java/SerinaError.java`
+- `src/main/java/Storage.java`
+- `AI.md`
+- `test-ui.md`
+
+## Level 8 (Load)
+
+Instruction:
+
+Load saved task data from the hard disk when the chatbot starts up, using the same file written in the previous save level.
+
+What Codex did:
+
+- Coding contribution: I completed the storage loop by teaching Serina to read `data/serina.txt` on startup and rebuild the in-memory task list before the user enters commands.
+- Added `Storage.loadTasks()` so a missing save file starts Serina with an empty list.
+- Added parsing for saved todo, deadline, and event lines.
+- Added enum helpers in `TaskType` and `TaskStatus` so saved type and status values are converted back safely.
+- Added constructors that allow saved tasks to be recreated with their existing done/not-done status.
+- Added a Serina-specific load error in `SerinaError`; if loading fails, Serina reports the issue and continues with an empty list.
+- Updated `test-ui.md` with load-file test cases.
+
+Files changed:
+
+- `src/main/java/Serina.java`
+- `src/main/java/Storage.java`
+- `src/main/java/Task.java`
+- `src/main/java/Todo.java`
+- `src/main/java/Deadline.java`
+- `src/main/java/Event.java`
+- `src/main/java/TaskType.java`
+- `src/main/java/TaskStatus.java`
+- `src/main/java/SerinaError.java`
+- `AI.md`
+- `test-ui.md`
+
+## Level 9 (Edge Cases)
+
+Instruction:
+
+Enhance the code to handle edge cases and possible errors, while continuing to use relative file paths instead of absolute paths.
+
+What Codex did:
+
+- Coding contribution: I tightened the persistence code so bad or unusual save-file data cannot crash Serina. The storage path remains relative as `data/serina.txt`, which keeps the app portable across computers.
+- Made Serina greet first, then report any load problem before accepting commands.
+- Confirmed Serina starts normally when `data/serina.txt` and the `data` folder do not exist yet.
+- Made the loader ignore blank lines in the save file.
+- Added validation for malformed saved tasks, unknown saved task types, invalid saved status values, missing descriptions, and missing deadline/event fields.
+- Added a clear error for save files containing more than 100 tasks.
+- Escaped `|` and `\` when saving task fields so user-entered text containing the file delimiter can still be saved and loaded correctly.
+- Updated `test-ui.md` with edge-case persistence tests, including first-run startup without an existing save file.
+
+Files changed:
+
+- `src/main/java/Serina.java`
+- `src/main/java/Storage.java`
+- `src/main/java/Task.java`
+- `src/main/java/Deadline.java`
+- `src/main/java/Event.java`
+- `src/main/java/TaskType.java`
+- `src/main/java/TaskStatus.java`
+- `src/main/java/SerinaError.java`
+- `AI.md`
+- `test-ui.md`

@@ -16,6 +16,17 @@ public abstract class Task {
     }
 
     /**
+     * Creates a task with the given description and saved status.
+     *
+     * @param description text describing the task
+     * @param status saved completion status
+     */
+    public Task(String description, TaskStatus status) {
+        this.description = description;
+        this.status = status;
+    }
+
+    /**
      * Marks this task as done.
      */
     public void markAsDone() {
@@ -44,6 +55,14 @@ public abstract class Task {
     }
 
     /**
+     * Returns this task in Serina's simple save-file format.
+     */
+    public String toFileString() {
+        return getTaskType().getIcon() + " | " + status.getFileValue() + " | " + escapeFileField(description)
+                + getFileDetails();
+    }
+
+    /**
      * Returns the type of this task.
      */
     protected abstract TaskType getTaskType();
@@ -53,6 +72,20 @@ public abstract class Task {
      */
     protected String getDetails() {
         return "";
+    }
+
+    /**
+     * Returns extra fields to append when saving this task to disk.
+     */
+    protected String getFileDetails() {
+        return "";
+    }
+
+    /**
+     * Escapes characters that have special meaning in Serina's save-file format.
+     */
+    protected static String escapeFileField(String field) {
+        return field.replace("\\", "\\\\").replace("|", "\\|");
     }
 
     @Override

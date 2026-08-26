@@ -23,4 +23,19 @@ public enum TaskType {
     public String getIcon() {
         return icon;
     }
+
+    /**
+     * Returns the task type matching a value from the save file.
+     *
+     * @throws SerinaException if the value does not match a supported task type
+     */
+    public static TaskType fromFileValue(String value) throws SerinaException {
+        for (TaskType type : values()) {
+            if (type.icon.equals(value.trim())) {
+                return type;
+            }
+        }
+
+        throw new SerinaException(SerinaError.LOAD_FAILED);
+    }
 }
