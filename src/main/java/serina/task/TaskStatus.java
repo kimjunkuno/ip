@@ -18,8 +18,8 @@ public enum TaskStatus {
     /**
      * Creates a task status with the given display icon.
      *
-     * @param icon short icon shown beside a task
-     * @param fileValue value used when saving the status to disk
+     * @param icon Short icon shown beside a task.
+     * @param fileValue Value used when saving the status to disk.
      */
     TaskStatus(String icon, String fileValue) {
         this.icon = icon;
@@ -29,7 +29,7 @@ public enum TaskStatus {
     /**
      * Returns the icon shown when displaying this task status.
      *
-     * @return the display icon
+     * @return The display icon.
      */
     public String getIcon() {
         return icon;
@@ -38,7 +38,7 @@ public enum TaskStatus {
     /**
      * Returns the compact value written to the save file.
      *
-     * @return the save-file value
+     * @return The save-file value.
      */
     public String getFileValue() {
         return fileValue;
@@ -47,9 +47,9 @@ public enum TaskStatus {
     /**
      * Returns the status matching a value from the save file.
      *
-     * @param value save-file value to parse
-     * @return the matching status
-     * @throws SerinaException if the value does not match a supported task status
+     * @param value Save-file value to parse.
+     * @return The matching status.
+     * @throws SerinaException If the value does not match a supported task status.
      */
     public static TaskStatus parseFileValue(String value) throws SerinaException {
         for (TaskStatus status : values()) {

@@ -8,40 +8,40 @@ import serina.parser.DateParser;
  * Represents a task that happens from a start date or time to an end date or time.
  */
 public class Event extends Task {
-    private final LocalDate from;
-    private final LocalDate to;
+    private final LocalDate startDate;
+    private final LocalDate endDate;
 
     /**
      * Creates an event task with the given description, start, and end.
      *
-     * @param description text describing the task
-     * @param from start date or time
-     * @param to end date or time
+     * @param description Text describing the task.
+     * @param startDate Start date or time.
+     * @param endDate End date or time.
      */
-    public Event(String description, LocalDate from, LocalDate to) {
+    public Event(String description, LocalDate startDate, LocalDate endDate) {
         super(description);
-        this.from = from;
-        this.to = to;
+        this.startDate = startDate;
+        this.endDate = endDate;
     }
 
     /**
      * Creates an event task with the given description, start, end, and saved status.
      *
-     * @param description text describing the task
-     * @param from start date or time
-     * @param to end date or time
-     * @param status saved completion status
+     * @param description Text describing the task.
+     * @param startDate Start date or time.
+     * @param endDate End date or time.
+     * @param status Saved completion status.
      */
-    public Event(String description, LocalDate from, LocalDate to, TaskStatus status) {
+    public Event(String description, LocalDate startDate, LocalDate endDate, TaskStatus status) {
         super(description, status);
-        this.from = from;
-        this.to = to;
+        this.startDate = startDate;
+        this.endDate = endDate;
     }
 
     /**
      * Returns the event task type.
      *
-     * @return {@link TaskType#EVENT}
+     * @return {@link TaskType#EVENT}.
      */
     @Override
     protected TaskType getTaskType() {
@@ -51,32 +51,32 @@ public class Event extends Task {
     /**
      * Returns the event's start and end dates formatted for display.
      *
-     * @return display text containing the event date range
+     * @return Display text containing the event date range.
      */
     @Override
     protected String getDetails() {
-        return " (from: " + DateParser.formatDisplayDate(from)
-                + " to: " + DateParser.formatDisplayDate(to) + ")";
+        return " (from: " + DateParser.formatDisplayDate(startDate)
+                + " to: " + DateParser.formatDisplayDate(endDate) + ")";
     }
 
     /**
      * Returns the event date fields used in the save file.
      *
-     * @return serialized event details
+     * @return Serialized event details.
      */
     @Override
     protected String getFileDetails() {
-        return " | " + DateParser.formatFileDate(from) + " | " + DateParser.formatFileDate(to);
+        return " | " + DateParser.formatFileDate(startDate) + " | " + DateParser.formatFileDate(endDate);
     }
 
     /**
      * Checks whether the given date falls within this event's inclusive date range.
      *
-     * @param date date to check
-     * @return {@code true} if {@code date} is between the start and end dates, inclusive
+     * @param date Date to check.
+     * @return {@code true} if {@code date} is between the start and end dates, inclusive.
      */
     @Override
     public boolean isOccurringOn(LocalDate date) {
-        return !date.isBefore(from) && !date.isAfter(to);
+        return !date.isBefore(startDate) && !date.isAfter(endDate);
     }
 }

@@ -8,35 +8,35 @@ import serina.parser.DateParser;
  * Represents a task that needs to be done by a specific date or time.
  */
 public class Deadline extends Task {
-    private final LocalDate by;
+    private final LocalDate deadlineDate;
 
     /**
      * Creates a deadline task with the given description and deadline.
      *
-     * @param description text describing the task
-     * @param by deadline for the task
+     * @param description Text describing the task.
+     * @param deadlineDate Deadline for the task.
      */
-    public Deadline(String description, LocalDate by) {
+    public Deadline(String description, LocalDate deadlineDate) {
         super(description);
-        this.by = by;
+        this.deadlineDate = deadlineDate;
     }
 
     /**
      * Creates a deadline task with the given description, deadline, and saved status.
      *
-     * @param description text describing the task
-     * @param by deadline for the task
-     * @param status saved completion status
+     * @param description Text describing the task.
+     * @param deadlineDate Deadline for the task.
+     * @param status Saved completion status.
      */
-    public Deadline(String description, LocalDate by, TaskStatus status) {
+    public Deadline(String description, LocalDate deadlineDate, TaskStatus status) {
         super(description, status);
-        this.by = by;
+        this.deadlineDate = deadlineDate;
     }
 
     /**
      * Returns the deadline task type.
      *
-     * @return {@link TaskType#DEADLINE}
+     * @return {@link TaskType#DEADLINE}.
      */
     @Override
     protected TaskType getTaskType() {
@@ -46,31 +46,31 @@ public class Deadline extends Task {
     /**
      * Returns the deadline date formatted for display.
      *
-     * @return display text containing the deadline date
+     * @return Display text containing the deadline date.
      */
     @Override
     protected String getDetails() {
-        return " (by: " + DateParser.formatDisplayDate(by) + ")";
+        return " (by: " + DateParser.formatDisplayDate(deadlineDate) + ")";
     }
 
     /**
      * Returns the deadline date field used in the save file.
      *
-     * @return serialized deadline details
+     * @return Serialized deadline details.
      */
     @Override
     protected String getFileDetails() {
-        return " | " + DateParser.formatFileDate(by);
+        return " | " + DateParser.formatFileDate(deadlineDate);
     }
 
     /**
      * Checks whether this task is due on the given date.
      *
-     * @param date date to check
-     * @return {@code true} if the deadline is on {@code date}
+     * @param date Date to check.
+     * @return {@code true} if the deadline is on {@code date}.
      */
     @Override
     public boolean isOccurringOn(LocalDate date) {
-        return by.equals(date);
+        return deadlineDate.equals(date);
     }
 }

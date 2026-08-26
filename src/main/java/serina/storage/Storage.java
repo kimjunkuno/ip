@@ -33,8 +33,8 @@ public class Storage {
     /**
      * Loads tasks from Serina's save file.
      *
-     * @return saved tasks, or an empty list if there is no save file yet
-     * @throws SerinaException if Serina is unable to read the save file
+     * @return Saved tasks, or an empty list if there is no save file yet.
+     * @throws SerinaException If Serina is unable to read the save file.
      */
     public static List<Task> loadTasks() throws SerinaException {
         try {
@@ -62,8 +62,8 @@ public class Storage {
     /**
      * Saves all current tasks to Serina's save file.
      *
-     * @param tasks tasks to write to disk
-     * @throws SerinaException if Serina is unable to create or write the save file
+     * @param tasks Tasks to write to disk.
+     * @throws SerinaException If Serina is unable to create or write the save file.
      */
     public static void saveTasks(List<Task> tasks) throws SerinaException {
         try {
@@ -77,8 +77,8 @@ public class Storage {
     /**
      * Converts tasks into the lines used by Serina's save-file format.
      *
-     * @param tasks tasks to serialize
-     * @return one serialized line for each task
+     * @param tasks Tasks to serialize.
+     * @return One serialized line for each task.
      */
     private static List<String> toFileLines(List<Task> tasks) {
         List<String> lines = new ArrayList<>();
@@ -91,9 +91,9 @@ public class Storage {
     /**
      * Reconstructs a task from one line of the save file.
      *
-     * @param line serialized task data
-     * @return the reconstructed task
-     * @throws SerinaException if the line does not follow the expected format
+     * @param line Serialized task data.
+     * @return The reconstructed task.
+     * @throws SerinaException If the line does not follow the expected format.
      */
     private static Task parseTask(String line) throws SerinaException {
         List<String> parts = splitFileLine(line);
@@ -132,29 +132,29 @@ public class Storage {
     /**
      * Reconstructs an event and validates that its end date is not before its start date.
      *
-     * @param description event description
-     * @param fromText event start date in save-file format
-     * @param toText event end date in save-file format
-     * @param status saved completion status
-     * @return the reconstructed event
-     * @throws SerinaException if either date is invalid or the date range is reversed
+     * @param description Event description.
+     * @param startDateText Event start date in save-file format.
+     * @param endDateText Event end date in save-file format.
+     * @param status Saved completion status.
+     * @return The reconstructed event.
+     * @throws SerinaException If either date is invalid or the date range is reversed.
      */
-    private static Event parseEvent(String description, String fromText, String toText, TaskStatus status)
+    private static Event parseEvent(String description, String startDateText, String endDateText, TaskStatus status)
             throws SerinaException {
-        LocalDate from = DateParser.parseFileDate(fromText);
-        LocalDate to = DateParser.parseFileDate(toText);
-        if (to.isBefore(from)) {
+        LocalDate startDate = DateParser.parseFileDate(startDateText);
+        LocalDate endDate = DateParser.parseFileDate(endDateText);
+        if (endDate.isBefore(startDate)) {
             throw new SerinaException(SerinaError.LOAD_FAILED);
         }
 
-        return new Event(description, from, to, status);
+        return new Event(description, startDate, endDate, status);
     }
 
     /**
      * Splits a save-file line on unescaped delimiters and restores escaped characters.
      *
-     * @param line serialized task data
-     * @return the decoded fields in the line
+     * @param line Serialized task data.
+     * @return The decoded fields in the line.
      */
     private static List<String> splitFileLine(String line) {
         List<String> parts = new ArrayList<>();
@@ -180,8 +180,8 @@ public class Storage {
     /**
      * Checks whether a character can be escaped in the save-file format.
      *
-     * @param character character following an escape marker
-     * @return {@code true} for a backslash or field delimiter
+     * @param character Character following an escape marker.
+     * @return {@code true} for a backslash or field delimiter.
      */
     private static boolean isEscapedCharacter(char character) {
         return character == '\\' || character == '|';
