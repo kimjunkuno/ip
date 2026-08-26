@@ -1,7 +1,9 @@
-package serina;
+package serina.ui;
 
 import java.util.List;
 import java.util.Scanner;
+
+import serina.task.Task;
 
 /**
  * Handles console input and output for Serina.

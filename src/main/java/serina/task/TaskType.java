@@ -1,4 +1,7 @@
-package serina;
+package serina.task;
+
+import serina.exception.SerinaError;
+import serina.exception.SerinaException;
 
 /**
  * Represents the supported task types and their display icons.

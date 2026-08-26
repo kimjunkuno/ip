@@ -1,6 +1,8 @@
-package serina;
+package serina.task;
 
 import java.time.LocalDate;
+
+import serina.parser.DateParser;
 
 /**
  * Represents a task that happens from a start date or time to an end date or time.

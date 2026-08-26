@@ -1,9 +1,12 @@
-package serina;
+package serina.task;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import serina.exception.SerinaError;
+import serina.exception.SerinaException;
 
 /**
  * Stores Serina's tasks and provides operations that act on the task collection.
