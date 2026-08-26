@@ -4,6 +4,7 @@ package serina.exception;
  * Represents errors that Serina can explain to the user.
  */
 public class SerinaException extends Exception {
+    /** Serina-specific error represented by this exception. */
     private final SerinaError error;
 
     /**
@@ -18,6 +19,8 @@ public class SerinaException extends Exception {
 
     /**
      * Returns whether Serina should exit after this exception is shown.
+     *
+     * @return {@code true} if this exception should end the application
      */
     public boolean shouldExit() {
         return error.shouldExit();

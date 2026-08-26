@@ -22,6 +22,8 @@ public final class DateParser {
     /**
      * Parses a date entered by the user.
      *
+     * @param dateText date text in {@code yyyy-MM-dd} format
+     * @return the parsed date
      * @throws SerinaException if the date is not in the expected format
      */
     public static LocalDate parseInputDate(String dateText) throws SerinaException {
@@ -31,6 +33,8 @@ public final class DateParser {
     /**
      * Parses a date loaded from Serina's save file.
      *
+     * @param dateText saved date text in {@code yyyy-MM-dd} format
+     * @return the parsed date
      * @throws SerinaException if the date is not in the expected format
      */
     public static LocalDate parseFileDate(String dateText) throws SerinaException {
@@ -39,6 +43,9 @@ public final class DateParser {
 
     /**
      * Returns a date in the format shown to the user.
+     *
+     * @param date date to format
+     * @return the date formatted as {@code MMM d yyyy}
      */
     public static String formatDisplayDate(LocalDate date) {
         return date.format(DISPLAY_FORMATTER);
@@ -46,11 +53,22 @@ public final class DateParser {
 
     /**
      * Returns a date in the format saved to disk.
+     *
+     * @param date date to format
+     * @return the date formatted as {@code yyyy-MM-dd}
      */
     public static String formatFileDate(LocalDate date) {
         return date.format(INPUT_FORMATTER);
     }
 
+    /**
+     * Parses an ISO date and maps invalid input to the error appropriate for its source.
+     *
+     * @param dateText date text in {@code yyyy-MM-dd} format
+     * @param error error to report if the date cannot be parsed
+     * @return the parsed date
+     * @throws SerinaException if {@code dateText} is not a valid ISO date
+     */
     private static LocalDate parseDate(String dateText, SerinaError error) throws SerinaException {
         try {
             return LocalDate.parse(dateText, INPUT_FORMATTER);

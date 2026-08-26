@@ -33,21 +33,42 @@ public class Deadline extends Task {
         this.by = by;
     }
 
+    /**
+     * Returns the deadline task type.
+     *
+     * @return {@link TaskType#DEADLINE}
+     */
     @Override
     protected TaskType getTaskType() {
         return TaskType.DEADLINE;
     }
 
+    /**
+     * Returns the deadline date formatted for display.
+     *
+     * @return display text containing the deadline date
+     */
     @Override
     protected String getDetails() {
         return " (by: " + DateParser.formatDisplayDate(by) + ")";
     }
 
+    /**
+     * Returns the deadline date field used in the save file.
+     *
+     * @return serialized deadline details
+     */
     @Override
     protected String getFileDetails() {
         return " | " + DateParser.formatFileDate(by);
     }
 
+    /**
+     * Checks whether this task is due on the given date.
+     *
+     * @param date date to check
+     * @return {@code true} if the deadline is on {@code date}
+     */
     @Override
     public boolean isOccurringOn(LocalDate date) {
         return by.equals(date);

@@ -23,6 +23,8 @@ public class Ui implements AutoCloseable {
 
     /**
      * Returns whether another command is available from the user.
+     *
+     * @return {@code true} if another command can be read
      */
     public boolean hasNextCommand() {
         return scanner.hasNextLine();
@@ -30,6 +32,8 @@ public class Ui implements AutoCloseable {
 
     /**
      * Reads and trims the next command entered by the user.
+     *
+     * @return the trimmed command
      */
     public String readCommand() {
         return scanner.nextLine().trim();
@@ -77,6 +81,9 @@ public class Ui implements AutoCloseable {
 
     /**
      * Displays a newly added task and the updated task count.
+     *
+     * @param task task that was added
+     * @param taskCount number of tasks after the addition
      */
     public void showAddedTask(Task task, int taskCount) {
         printLine();
@@ -88,6 +95,8 @@ public class Ui implements AutoCloseable {
 
     /**
      * Displays a task that was marked as done.
+     *
+     * @param task task that was marked
      */
     public void showMarkedTask(Task task) {
         printLine();
@@ -98,6 +107,8 @@ public class Ui implements AutoCloseable {
 
     /**
      * Displays a task that was marked as not done.
+     *
+     * @param task task that was unmarked
      */
     public void showUnmarkedTask(Task task) {
         printLine();
@@ -108,6 +119,9 @@ public class Ui implements AutoCloseable {
 
     /**
      * Displays a deleted task and the updated task count.
+     *
+     * @param task task that was deleted
+     * @param taskCount number of tasks after the deletion
      */
     public void showDeletedTask(Task task, int taskCount) {
         printLine();
@@ -119,6 +133,8 @@ public class Ui implements AutoCloseable {
 
     /**
      * Displays a message in Serina's standard response box.
+     *
+     * @param message message to display
      */
     public void showMessage(String message) {
         printLine();
@@ -128,6 +144,8 @@ public class Ui implements AutoCloseable {
 
     /**
      * Displays all tasks with one-based numbering.
+     *
+     * @param tasks tasks to display
      */
     public void showList(List<Task> tasks) {
         showNumberedTasks("Here are the tasks in your list:", tasks);
@@ -135,11 +153,19 @@ public class Ui implements AutoCloseable {
 
     /**
      * Displays tasks that match a search with one-based numbering.
+     *
+     * @param tasks matching tasks to display
      */
     public void showMatchingTasks(List<Task> tasks) {
         showNumberedTasks("Here are the matching tasks in your list:", tasks);
     }
 
+    /**
+     * Displays a heading followed by tasks numbered from one.
+     *
+     * @param heading heading shown above the task list
+     * @param tasks tasks to display
+     */
     private void showNumberedTasks(String heading, List<Task> tasks) {
         printLine();
         System.out.println(MESSAGE_PREFIX + heading);

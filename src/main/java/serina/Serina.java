@@ -19,6 +19,12 @@ import serina.ui.Ui;
  */
 public class Serina {
     /**
+     * Prevents instantiation of this application entry-point class.
+     */
+    private Serina() {
+    }
+
+    /**
      * Starts Serina and processes user commands from standard input.
      *
      * @param args command line arguments, which are not used
@@ -76,6 +82,12 @@ public class Serina {
         }
     }
 
+    /**
+     * Loads saved tasks, reporting a loading error and returning an empty list if loading fails.
+     *
+     * @param ui user interface used to report a loading error
+     * @return the loaded task list, or an empty task list when the save file cannot be loaded
+     */
     private static TaskList loadTasks(Ui ui) {
         try {
             return new TaskList(Storage.loadTasks());

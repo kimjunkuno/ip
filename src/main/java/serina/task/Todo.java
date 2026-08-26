@@ -23,6 +23,11 @@ public class Todo extends Task {
         super(description, status);
     }
 
+    /**
+     * Returns the todo task type.
+     *
+     * @return {@link TaskType#TODO}
+     */
     @Override
     protected TaskType getTaskType() {
         return TaskType.TODO;
