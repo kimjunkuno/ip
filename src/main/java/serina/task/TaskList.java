@@ -26,7 +26,7 @@ public class TaskList {
     /**
      * Creates a task list containing the supplied tasks.
      *
-     * @param tasks initial tasks, typically loaded from storage
+     * @param tasks Initial tasks, typically loaded from storage.
      */
     public TaskList(List<Task> tasks) {
         this.tasks = new ArrayList<>(tasks);
@@ -35,8 +35,8 @@ public class TaskList {
     /**
      * Adds a task to the list.
      *
-     * @param task task to add
-     * @throws SerinaException if the task list has reached its maximum size
+     * @param task Task to add.
+     * @throws SerinaException If the task list has reached its maximum size.
      */
     public void add(Task task) throws SerinaException {
         if (tasks.size() >= MAX_TASKS) {
@@ -49,9 +49,9 @@ public class TaskList {
     /**
      * Returns the task matching a one-based task number entered by the user.
      *
-     * @param taskNumberText one-based task number entered by the user
-     * @return the matching task
-     * @throws SerinaException if the given text is not a valid stored task number
+     * @param taskNumberText One-based task number entered by the user.
+     * @return The matching task.
+     * @throws SerinaException If the given text is not a valid stored task number.
      */
     public Task getTask(String taskNumberText) throws SerinaException {
         return tasks.get(getTaskIndex(taskNumberText));
@@ -60,9 +60,9 @@ public class TaskList {
     /**
      * Removes and returns the task matching a one-based task number.
      *
-     * @param taskNumberText one-based task number entered by the user
-     * @return the removed task
-     * @throws SerinaException if the given text is not a valid stored task number
+     * @param taskNumberText One-based task number entered by the user.
+     * @return The removed task.
+     * @throws SerinaException If the given text is not a valid stored task number.
      */
     public Task delete(String taskNumberText) throws SerinaException {
         return tasks.remove(getTaskIndex(taskNumberText));
@@ -71,8 +71,8 @@ public class TaskList {
     /**
      * Returns tasks that occur on the given date.
      *
-     * @param date date to match
-     * @return tasks occurring on {@code date}
+     * @param date Date to match.
+     * @return Tasks occurring on {@code date}.
      */
     public List<Task> find(LocalDate date) {
         List<Task> matchingTasks = new ArrayList<>();
@@ -87,7 +87,7 @@ public class TaskList {
     /**
      * Returns the current number of tasks.
      *
-     * @return the task count
+     * @return The task count.
      */
     public int size() {
         return tasks.size();
@@ -96,7 +96,7 @@ public class TaskList {
     /**
      * Returns a read-only view of the tasks for display and persistence.
      *
-     * @return an unmodifiable view of the tasks
+     * @return An unmodifiable view of the tasks.
      */
     public List<Task> asList() {
         return Collections.unmodifiableList(tasks);
@@ -105,9 +105,9 @@ public class TaskList {
     /**
      * Converts a one-based user task number into a valid zero-based list index.
      *
-     * @param taskNumberText task number entered by the user
-     * @return the corresponding zero-based index
-     * @throws SerinaException if the text is not an integer or refers to a missing task
+     * @param taskNumberText Task number entered by the user.
+     * @return The corresponding zero-based index.
+     * @throws SerinaException If the text is not an integer or refers to a missing task.
      */
     private int getTaskIndex(String taskNumberText) throws SerinaException {
         try {

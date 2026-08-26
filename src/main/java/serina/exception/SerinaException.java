@@ -10,7 +10,7 @@ public class SerinaException extends Exception {
     /**
      * Creates a Serina-specific exception with the given error.
      *
-     * @param error error that explains what went wrong
+     * @param error Error that explains what went wrong.
      */
     public SerinaException(SerinaError error) {
         super(error.getMessage());
@@ -20,7 +20,7 @@ public class SerinaException extends Exception {
     /**
      * Returns whether Serina should exit after this exception is shown.
      *
-     * @return {@code true} if this exception should end the application
+     * @return {@code true} if this exception should end the application.
      */
     public boolean shouldExit() {
         return error.shouldExit();

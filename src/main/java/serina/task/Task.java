@@ -12,7 +12,7 @@ public abstract class Task {
     /**
      * Creates a task with the given description.
      *
-     * @param description text describing the task
+     * @param description Text describing the task.
      */
     public Task(String description) {
         this.description = description;
@@ -22,8 +22,8 @@ public abstract class Task {
     /**
      * Creates a task with the given description and saved status.
      *
-     * @param description text describing the task
-     * @param status saved completion status
+     * @param description Text describing the task.
+     * @param status Saved completion status.
      */
     public Task(String description, TaskStatus status) {
         this.description = description;
@@ -47,7 +47,7 @@ public abstract class Task {
     /**
      * Returns the task text without its status icon.
      *
-     * @return the task description
+     * @return The task description.
      */
     public String getDescription() {
         return description;
@@ -56,7 +56,7 @@ public abstract class Task {
     /**
      * Returns the status icon used when displaying this task.
      *
-     * @return the status icon
+     * @return The status icon.
      */
     public String getStatusIcon() {
         return status.getIcon();
@@ -65,7 +65,7 @@ public abstract class Task {
     /**
      * Returns this task in Serina's simple save-file format.
      *
-     * @return the serialized task
+     * @return The serialized task.
      */
     public String toFileString() {
         return getTaskType().getIcon() + " | " + status.getFileValue() + " | " + escapeFileField(description)
@@ -75,14 +75,14 @@ public abstract class Task {
     /**
      * Returns the type of this task.
      *
-     * @return the task type
+     * @return The task type.
      */
     protected abstract TaskType getTaskType();
 
     /**
      * Returns extra details to display after the task description.
      *
-     * @return display details, or an empty string when there are none
+     * @return Display details, or an empty string when there are none.
      */
     protected String getDetails() {
         return "";
@@ -91,7 +91,7 @@ public abstract class Task {
     /**
      * Returns extra fields to append when saving this task to disk.
      *
-     * @return serialized detail fields, or an empty string when there are none
+     * @return Serialized detail fields, or an empty string when there are none.
      */
     protected String getFileDetails() {
         return "";
@@ -100,8 +100,8 @@ public abstract class Task {
     /**
      * Returns whether this task happens on the given date.
      *
-     * @param date date to check
-     * @return {@code true} if this task occurs on {@code date}
+     * @param date Date to check.
+     * @return {@code true} if this task occurs on {@code date}.
      */
     public boolean isOccurringOn(LocalDate date) {
         return false;
@@ -110,8 +110,8 @@ public abstract class Task {
     /**
      * Escapes characters that have special meaning in Serina's save-file format.
      *
-     * @param field field to escape
-     * @return the escaped field
+     * @param field Field to escape.
+     * @return The escaped field.
      */
     protected static String escapeFileField(String field) {
         return field.replace("\\", "\\\\").replace("|", "\\|");
@@ -120,7 +120,7 @@ public abstract class Task {
     /**
      * Returns the task's type, status, description, and type-specific display details.
      *
-     * @return the formatted task text shown to the user
+     * @return The formatted task text shown to the user.
      */
     @Override
     public String toString() {

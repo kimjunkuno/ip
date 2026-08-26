@@ -19,7 +19,7 @@ public enum TaskType {
     /**
      * Creates a task type with the given display icon.
      *
-     * @param icon short icon shown beside a task
+     * @param icon Short icon shown beside a task.
      */
     TaskType(String icon) {
         this.icon = icon;
@@ -28,7 +28,7 @@ public enum TaskType {
     /**
      * Returns the icon shown when displaying this task type.
      *
-     * @return the display icon
+     * @return The display icon.
      */
     public String getIcon() {
         return icon;
@@ -37,9 +37,9 @@ public enum TaskType {
     /**
      * Returns the task type matching a value from the save file.
      *
-     * @param value save-file value to parse
-     * @return the matching task type
-     * @throws SerinaException if the value does not match a supported task type
+     * @param value Save-file value to parse.
+     * @return The matching task type.
+     * @throws SerinaException If the value does not match a supported task type.
      */
     public static TaskType parseFileValue(String value) throws SerinaException {
         for (TaskType type : values()) {

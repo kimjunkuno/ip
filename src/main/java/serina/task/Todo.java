@@ -7,7 +7,7 @@ public class Todo extends Task {
     /**
      * Creates a todo task with the given description.
      *
-     * @param description text describing the task
+     * @param description Text describing the task.
      */
     public Todo(String description) {
         super(description);
@@ -16,8 +16,8 @@ public class Todo extends Task {
     /**
      * Creates a todo task with the given description and saved status.
      *
-     * @param description text describing the task
-     * @param status saved completion status
+     * @param description Text describing the task.
+     * @param status Saved completion status.
      */
     public Todo(String description, TaskStatus status) {
         super(description, status);
@@ -26,7 +26,7 @@ public class Todo extends Task {
     /**
      * Returns the todo task type.
      *
-     * @return {@link TaskType#TODO}
+     * @return {@link TaskType#TODO}.
      */
     @Override
     protected TaskType getTaskType() {

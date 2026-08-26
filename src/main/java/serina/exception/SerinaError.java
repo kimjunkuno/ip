@@ -46,8 +46,8 @@ public enum SerinaError {
     /**
      * Creates an error with its display message and exit behavior.
      *
-     * @param message explanation to show to the user
-     * @param shouldExit whether Serina should exit after showing the message
+     * @param message Explanation to show to the user.
+     * @param shouldExit Whether Serina should exit after showing the message.
      */
     SerinaError(String message, boolean shouldExit) {
         this.message = message;
@@ -57,7 +57,7 @@ public enum SerinaError {
     /**
      * Returns the message shown to the user.
      *
-     * @return the user-facing error message
+     * @return The user-facing error message.
      */
     public String getMessage() {
         return message;
@@ -66,7 +66,7 @@ public enum SerinaError {
     /**
      * Returns whether Serina should exit after this error.
      *
-     * @return {@code true} if this error should end the application
+     * @return {@code true} if this error should end the application.
      */
     public boolean shouldExit() {
         return shouldExit;

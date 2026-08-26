@@ -27,7 +27,7 @@ public class Serina {
     /**
      * Starts Serina and processes user commands from standard input.
      *
-     * @param args command line arguments, which are not used
+     * @param args Command line arguments, which are not used.
      */
     public static void main(String[] args) {
         try (Ui ui = new Ui()) {
@@ -85,8 +85,8 @@ public class Serina {
     /**
      * Loads saved tasks, reporting a loading error and returning an empty list if loading fails.
      *
-     * @param ui user interface used to report a loading error
-     * @return the loaded task list, or an empty task list when the save file cannot be loaded
+     * @param ui User interface used to report a loading error.
+     * @return The loaded task list, or an empty task list when the save file cannot be loaded.
      */
     private static TaskList loadTasks(Ui ui) {
         try {
@@ -100,7 +100,7 @@ public class Serina {
     /**
      * Creates the correct task type from the user's command.
      *
-     * @throws SerinaException if the command is unknown or missing required fields
+     * @throws SerinaException If the command is unknown or missing required fields.
      */
     private static Task createTask(String input) throws SerinaException {
         if (input.equals("todo") || input.startsWith("todo ")) {
@@ -141,16 +141,16 @@ public class Serina {
         }
 
         String description = commandText.substring(0, byIndex).trim();
-        String byText = commandText.substring(byIndex + "/by".length()).trim();
+        String deadlineDateText = commandText.substring(byIndex + "/by".length()).trim();
         if (description.isEmpty()) {
             throw new SerinaException(SerinaError.EMPTY_DEADLINE_DESCRIPTION);
         }
-        if (byText.isEmpty()) {
+        if (deadlineDateText.isEmpty()) {
             throw new SerinaException(SerinaError.EMPTY_DEADLINE_BY);
         }
 
-        LocalDate by = DateParser.parseInputDate(byText);
-        return new Deadline(description, by);
+        LocalDate deadlineDate = DateParser.parseInputDate(deadlineDateText);
+        return new Deadline(description, deadlineDate);
     }
 
     /**
@@ -165,31 +165,31 @@ public class Serina {
         }
 
         String description = commandText.substring(0, fromIndex).trim();
-        String fromText = commandText.substring(fromIndex + "/from".length(), toIndex).trim();
-        String toText = commandText.substring(toIndex + "/to".length()).trim();
+        String startDateText = commandText.substring(fromIndex + "/from".length(), toIndex).trim();
+        String endDateText = commandText.substring(toIndex + "/to".length()).trim();
         if (description.isEmpty()) {
             throw new SerinaException(SerinaError.EMPTY_EVENT_DESCRIPTION);
         }
-        if (fromText.isEmpty()) {
+        if (startDateText.isEmpty()) {
             throw new SerinaException(SerinaError.EMPTY_EVENT_FROM);
         }
-        if (toText.isEmpty()) {
+        if (endDateText.isEmpty()) {
             throw new SerinaException(SerinaError.EMPTY_EVENT_TO);
         }
 
-        LocalDate from = DateParser.parseInputDate(fromText);
-        LocalDate to = DateParser.parseInputDate(toText);
-        if (to.isBefore(from)) {
+        LocalDate startDate = DateParser.parseInputDate(startDateText);
+        LocalDate endDate = DateParser.parseInputDate(endDateText);
+        if (endDate.isBefore(startDate)) {
             throw new SerinaException(SerinaError.INVALID_EVENT_DATE_RANGE);
         }
 
-        return new Event(description, from, to);
+        return new Event(description, startDate, endDate);
     }
 
     /**
      * Parses the date entered in a find command.
      *
-     * @throws SerinaException if the date is empty or not in the expected format
+     * @throws SerinaException If the date is empty or not in the expected format.
      */
     private static LocalDate parseFindDate(String dateText) throws SerinaException {
         String trimmedDateText = dateText.trim();
