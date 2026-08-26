@@ -1,4 +1,4 @@
-package serina;
+package serina.task;
 
 /**
  * Represents a task without any date or time attached to it.

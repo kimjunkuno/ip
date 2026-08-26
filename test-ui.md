@@ -9,7 +9,7 @@ Compile and run Serina, then enter the inputs shown under each test case.
 From the project root, the terminal commands are:
 
 ```bash
-javac -d out src/main/java/serina/*.java
+javac -d out $(find src/main/java -name "*.java")
 java -cp out serina.Serina
 ```
 

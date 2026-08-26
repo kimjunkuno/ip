@@ -1,9 +1,12 @@
-package serina;
+package serina.parser;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Locale;
+
+import serina.exception.SerinaError;
+import serina.exception.SerinaException;
 
 /**
  * Parses and formats dates used by Serina tasks.

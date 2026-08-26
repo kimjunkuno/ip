@@ -1,4 +1,7 @@
-package serina;
+package serina.task;
+
+import serina.exception.SerinaError;
+import serina.exception.SerinaException;
 
 /**
  * Represents whether a task is done and how that status is displayed.

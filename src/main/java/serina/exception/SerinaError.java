@@ -1,4 +1,4 @@
-package serina;
+package serina.exception;
 
 /**
  * Represents Serina-specific errors and their user-facing behavior.
