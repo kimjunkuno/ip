@@ -1,3 +1,7 @@
+package serina;
+
+import java.time.LocalDate;
+
 /**
  * Represents a task that can be marked as done or not done.
  */
@@ -79,6 +83,13 @@ public abstract class Task {
      */
     protected String getFileDetails() {
         return "";
+    }
+
+    /**
+     * Returns whether this task happens on the given date.
+     */
+    public boolean isOccurringOn(LocalDate date) {
+        return false;
     }
 
     /**

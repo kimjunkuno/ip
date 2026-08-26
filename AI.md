@@ -198,7 +198,7 @@ Files changed:
 - `AI.md`
 - `test-ui.md`
 
-## Level 8 (Load)
+## Storage (Load)
 
 Instruction:
 
@@ -228,7 +228,7 @@ Files changed:
 - `AI.md`
 - `test-ui.md`
 
-## Level 9 (Edge Cases)
+## Storage (Edge Cases)
 
 Instruction:
 
@@ -255,5 +255,34 @@ Files changed:
 - `src/main/java/TaskType.java`
 - `src/main/java/TaskStatus.java`
 - `src/main/java/SerinaError.java`
+- `AI.md`
+- `test-ui.md`
+
+## Level 8 (Dates and Times)
+
+Instruction:
+
+Teach Serina how to understand dates and times instead of treating deadline and event date fields as plain strings.
+
+What Codex did:
+
+- Coding contribution: I changed deadline and event date fields from raw `String` values into `LocalDate` values, so Serina now parses and stores real dates.
+- Added `DateParser` to centralize date parsing and display formatting.
+- Updated deadline and event commands to accept dates in `yyyy-MM-dd` format.
+- Updated task display so saved dates are shown in a friendlier format such as `Dec 2 2019`.
+- Updated save/load behavior so dates are stored in the stable `yyyy-MM-dd` format on disk.
+- Added validation for invalid date formats and event end dates that come before start dates.
+- Added a `find <date>` command that lists deadlines and events occurring on a given date.
+- Updated `test-ui.md` with date parsing, date formatting, invalid date, and `find` command tests.
+
+Files changed:
+
+- `src/main/java/serina/Serina.java`
+- `src/main/java/serina/Task.java`
+- `src/main/java/serina/Deadline.java`
+- `src/main/java/serina/Event.java`
+- `src/main/java/serina/DateParser.java`
+- `src/main/java/serina/Storage.java`
+- `src/main/java/serina/SerinaError.java`
 - `AI.md`
 - `test-ui.md`

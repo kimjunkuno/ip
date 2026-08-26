@@ -1,3 +1,5 @@
+package serina;
+
 /**
  * Represents a task without any date or time attached to it.
  */
