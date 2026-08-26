@@ -5,7 +5,8 @@ package serina;
  */
 public enum SerinaError {
     MAX_TASKS("You've reached the maximum number of tasks.", true),
-    UNKNOWN_COMMAND("Sorry captain, could you rephrase that for me?", false),
+    UNKNOWN_COMMAND(
+            "Sorry captain, could you rephrase that for me? Type help to see the available commands.", false),
     INVALID_TASK_NUMBER("Sorry captain, please provide a valid task number.", false),
     EMPTY_TODO("Sorry captain, todo descriptions can't be empty.", false),
     EMPTY_DEADLINE_DESCRIPTION("Sorry captain, deadline descriptions can't be empty.", false),

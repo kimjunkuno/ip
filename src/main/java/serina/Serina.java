@@ -32,7 +32,9 @@ public class Serina {
                 }
 
                 try {
-                    if (input.equals("list")) {
+                    if (input.equals("help")) {
+                        showHelp();
+                    } else if (input.equals("list")) {
                         showList(tasks);
                     } else if (input.equals("mark") || input.startsWith("mark ")) {
                         Task task = getTask(tasks, input.substring("mark".length()));
@@ -240,6 +242,24 @@ public class Serina {
         printLine();
         System.out.println(MESSAGE_PREFIX + "Hello! I'm Serina");
         System.out.println(MESSAGE_PREFIX + "What can I do for you?");
+        System.out.println(MESSAGE_PREFIX + "Type help to see the available commands.");
+        printLine();
+    }
+
+    private static void showHelp() {
+        printLine();
+        System.out.println(MESSAGE_PREFIX + "Here are the commands I can respond to:");
+        System.out.println(MESSAGE_PREFIX + "help - show this command list");
+        System.out.println(MESSAGE_PREFIX + "todo <task> - add a todo");
+        System.out.println(MESSAGE_PREFIX + "deadline <task> /by <yyyy-MM-dd> - add a deadline");
+        System.out.println(MESSAGE_PREFIX
+                + "event <task> /from <yyyy-MM-dd> /to <yyyy-MM-dd> - add an event");
+        System.out.println(MESSAGE_PREFIX + "list - show all tasks");
+        System.out.println(MESSAGE_PREFIX + "mark <number> - mark a task as done");
+        System.out.println(MESSAGE_PREFIX + "unmark <number> - mark a task as not done");
+        System.out.println(MESSAGE_PREFIX + "delete <number> - remove a task");
+        System.out.println(MESSAGE_PREFIX + "find <yyyy-MM-dd> - find tasks occurring on a date");
+        System.out.println(MESSAGE_PREFIX + "bye - exit Serina");
         printLine();
     }
 

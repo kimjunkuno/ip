@@ -30,6 +30,7 @@ Expected key output:
 ```text
 Hello! I'm Serina
 What can I do for you?
+Type help to see the available commands.
 Bye. Hope to see you again soon!
 ```
 
@@ -266,7 +267,7 @@ bye
 Expected key output:
 
 ```text
-Sorry captain, could you rephrase that for me?
+Sorry captain, could you rephrase that for me? Type help to see the available commands.
 Bye. Hope to see you again soon!
 ```
 
@@ -471,7 +472,7 @@ Expected key output:
 
 ```text
 Sorry captain, todo descriptions can't be empty.
-Sorry captain, could you rephrase that for me?
+Sorry captain, could you rephrase that for me? Type help to see the available commands.
 Got it. I've added this task:
   [T][ ] recovered task
 Now you have 1 tasks in the list.
@@ -718,6 +719,7 @@ Expected key output:
 ```text
 Hello! I'm Serina
 What can I do for you?
+Type help to see the available commands.
 Sorry captain, I couldn't load your saved tasks.
 Here are the tasks in your list:
 Bye. Hope to see you again soon!
@@ -746,6 +748,7 @@ Expected key output:
 ```text
 Hello! I'm Serina
 What can I do for you?
+Type help to see the available commands.
 Sorry captain, I found more than 100 saved tasks.
 Here are the tasks in your list:
 Bye. Hope to see you again soon!
@@ -772,6 +775,7 @@ Expected key output:
 ```text
 Hello! I'm Serina
 What can I do for you?
+Type help to see the available commands.
 Here are the tasks in your list:
 Got it. I've added this task:
   [T][ ] first run task
@@ -857,5 +861,33 @@ Expected key output:
 Here are the matching tasks in your list:
 1.[D][ ] return book (by: Dec 2 2019)
 2.[E][ ] orientation week (from: Dec 1 2019 to: Dec 3 2019)
+Bye. Hope to see you again soon!
+```
+
+## Help Command
+
+### Test Help.1 - Show Available Commands
+
+Input:
+
+```text
+help
+bye
+```
+
+Expected key output:
+
+```text
+Here are the commands I can respond to:
+help - show this command list
+todo <task> - add a todo
+deadline <task> /by <yyyy-MM-dd> - add a deadline
+event <task> /from <yyyy-MM-dd> /to <yyyy-MM-dd> - add an event
+list - show all tasks
+mark <number> - mark a task as done
+unmark <number> - mark a task as not done
+delete <number> - remove a task
+find <yyyy-MM-dd> - find tasks occurring on a date
+bye - exit Serina
 Bye. Hope to see you again soon!
 ```

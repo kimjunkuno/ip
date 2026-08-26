@@ -286,3 +286,25 @@ Files changed:
 - `src/main/java/serina/SerinaError.java`
 - `AI.md`
 - `test-ui.md`
+
+## Help Command
+
+Instruction:
+
+Add a `help` command that lists every command Serina understands, and mention the command in the greeting and
+unknown-command error message.
+
+What Codex did:
+
+- Added `help` handling to Serina's command loop without changing the task list or save file.
+- Added a concise description and usage format for every supported command.
+- Updated the greeting so new users know that they can type `help`.
+- Updated the unknown-command error so users are directed to the command list.
+- Updated `test-ui.md` with the new greeting and error wording and a complete help-command test.
+
+Files changed:
+
+- `src/main/java/serina/Serina.java`
+- `src/main/java/serina/SerinaError.java`
+- `AI.md`
+- `test-ui.md`
