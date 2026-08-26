@@ -1,9 +1,13 @@
+package serina;
+
+import java.time.LocalDate;
+
 /**
  * Represents a task that happens from a start date or time to an end date or time.
  */
 public class Event extends Task {
-    private final String from;
-    private final String to;
+    private final LocalDate from;
+    private final LocalDate to;
 
     /**
      * Creates an event task with the given description, start, and end.
@@ -12,7 +16,7 @@ public class Event extends Task {
      * @param from start date or time
      * @param to end date or time
      */
-    public Event(String description, String from, String to) {
+    public Event(String description, LocalDate from, LocalDate to) {
         super(description);
         this.from = from;
         this.to = to;
@@ -26,7 +30,7 @@ public class Event extends Task {
      * @param to end date or time
      * @param status saved completion status
      */
-    public Event(String description, String from, String to, TaskStatus status) {
+    public Event(String description, LocalDate from, LocalDate to, TaskStatus status) {
         super(description, status);
         this.from = from;
         this.to = to;
@@ -39,11 +43,17 @@ public class Event extends Task {
 
     @Override
     protected String getDetails() {
-        return " (from: " + from + " to: " + to + ")";
+        return " (from: " + DateParser.formatDisplayDate(from)
+                + " to: " + DateParser.formatDisplayDate(to) + ")";
     }
 
     @Override
     protected String getFileDetails() {
-        return " | " + escapeFileField(from) + " | " + escapeFileField(to);
+        return " | " + DateParser.formatFileDate(from) + " | " + DateParser.formatFileDate(to);
+    }
+
+    @Override
+    public boolean isOccurringOn(LocalDate date) {
+        return !date.isBefore(from) && !date.isAfter(to);
     }
 }

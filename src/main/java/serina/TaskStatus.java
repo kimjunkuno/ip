@@ -1,3 +1,5 @@
+package serina;
+
 /**
  * Represents whether a task is done and how that status is displayed.
  */
@@ -38,7 +40,7 @@ public enum TaskStatus {
      *
      * @throws SerinaException if the value does not match a supported task status
      */
-    public static TaskStatus fromFileValue(String value) throws SerinaException {
+    public static TaskStatus parseFileValue(String value) throws SerinaException {
         for (TaskStatus status : values()) {
             if (status.fileValue.equals(value.trim())) {
                 return status;

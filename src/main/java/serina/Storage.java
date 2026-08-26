@@ -1,6 +1,9 @@
+package serina;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,32 +72,43 @@ public class Storage {
             throw new SerinaException(SerinaError.LOAD_FAILED);
         }
 
-        TaskType type = TaskType.fromFileValue(parts.get(0));
-        TaskStatus status = TaskStatus.fromFileValue(parts.get(1));
+        TaskType type = TaskType.parseFileValue(parts.get(0));
+        TaskStatus status = TaskStatus.parseFileValue(parts.get(1));
         String description = parts.get(2);
         if (description.isEmpty()) {
             throw new SerinaException(SerinaError.LOAD_FAILED);
         }
 
         switch (type) {
-        case TODO:
-            if (parts.size() != 3) {
+            case TODO:
+                if (parts.size() != 3) {
+                    throw new SerinaException(SerinaError.LOAD_FAILED);
+                }
+                return new Todo(description, status);
+            case DEADLINE:
+                if (parts.size() != 4 || parts.get(3).isEmpty()) {
+                    throw new SerinaException(SerinaError.LOAD_FAILED);
+                }
+                return new Deadline(description, DateParser.parseFileDate(parts.get(3)), status);
+            case EVENT:
+                if (parts.size() != 5 || parts.get(3).isEmpty() || parts.get(4).isEmpty()) {
+                    throw new SerinaException(SerinaError.LOAD_FAILED);
+                }
+                return parseEvent(description, parts.get(3), parts.get(4), status);
+            default:
                 throw new SerinaException(SerinaError.LOAD_FAILED);
-            }
-            return new Todo(description, status);
-        case DEADLINE:
-            if (parts.size() != 4 || parts.get(3).isEmpty()) {
-                throw new SerinaException(SerinaError.LOAD_FAILED);
-            }
-            return new Deadline(description, parts.get(3), status);
-        case EVENT:
-            if (parts.size() != 5 || parts.get(3).isEmpty() || parts.get(4).isEmpty()) {
-                throw new SerinaException(SerinaError.LOAD_FAILED);
-            }
-            return new Event(description, parts.get(3), parts.get(4), status);
-        default:
+        }
+    }
+
+    private static Event parseEvent(String description, String fromText, String toText, TaskStatus status)
+            throws SerinaException {
+        LocalDate from = DateParser.parseFileDate(fromText);
+        LocalDate to = DateParser.parseFileDate(toText);
+        if (to.isBefore(from)) {
             throw new SerinaException(SerinaError.LOAD_FAILED);
         }
+
+        return new Event(description, from, to, status);
     }
 
     private static List<String> splitFileLine(String line) {

@@ -1,3 +1,5 @@
+package serina;
+
 /**
  * Represents errors that Serina can explain to the user.
  */

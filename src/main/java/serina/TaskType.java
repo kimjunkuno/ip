@@ -1,3 +1,5 @@
+package serina;
+
 /**
  * Represents the supported task types and their display icons.
  */
@@ -29,7 +31,7 @@ public enum TaskType {
      *
      * @throws SerinaException if the value does not match a supported task type
      */
-    public static TaskType fromFileValue(String value) throws SerinaException {
+    public static TaskType parseFileValue(String value) throws SerinaException {
         for (TaskType type : values()) {
             if (type.icon.equals(value.trim())) {
                 return type;

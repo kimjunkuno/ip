@@ -1,3 +1,6 @@
+package serina;
+
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -45,6 +48,9 @@ public class Serina {
                         Task task = deleteTask(tasks, input.substring("delete".length()));
                         Storage.saveTasks(tasks);
                         showDeletedTask(task, tasks.size());
+                    } else if (input.equals("find") || input.startsWith("find ")) {
+                        List<Task> matchingTasks = findTasks(tasks, input.substring("find".length()));
+                        showMatchingTasks(matchingTasks);
                     } else {
                         Task task = createTask(input);
                         addTask(tasks, task);
@@ -118,7 +124,7 @@ public class Serina {
     }
 
     /**
-     * Creates a deadline task from text in the format {@code <task> /by <time>}.
+     * Creates a deadline task from text in the format {@code <task> /by <date>}.
      */
     private static Deadline createDeadline(String input) throws SerinaException {
         String commandText = input.trim();
@@ -128,19 +134,20 @@ public class Serina {
         }
 
         String description = commandText.substring(0, byIndex).trim();
-        String by = commandText.substring(byIndex + "/by".length()).trim();
+        String byText = commandText.substring(byIndex + "/by".length()).trim();
         if (description.isEmpty()) {
             throw new SerinaException(SerinaError.EMPTY_DEADLINE_DESCRIPTION);
         }
-        if (by.isEmpty()) {
+        if (byText.isEmpty()) {
             throw new SerinaException(SerinaError.EMPTY_DEADLINE_BY);
         }
 
+        LocalDate by = DateParser.parseInputDate(byText);
         return new Deadline(description, by);
     }
 
     /**
-     * Creates an event task from text in the format {@code <task> /from <start> /to <end>}.
+     * Creates an event task from text in the format {@code <task> /from <start date> /to <end date>}.
      */
     private static Event createEvent(String input) throws SerinaException {
         String commandText = input.trim();
@@ -151,16 +158,22 @@ public class Serina {
         }
 
         String description = commandText.substring(0, fromIndex).trim();
-        String from = commandText.substring(fromIndex + "/from".length(), toIndex).trim();
-        String to = commandText.substring(toIndex + "/to".length()).trim();
+        String fromText = commandText.substring(fromIndex + "/from".length(), toIndex).trim();
+        String toText = commandText.substring(toIndex + "/to".length()).trim();
         if (description.isEmpty()) {
             throw new SerinaException(SerinaError.EMPTY_EVENT_DESCRIPTION);
         }
-        if (from.isEmpty()) {
+        if (fromText.isEmpty()) {
             throw new SerinaException(SerinaError.EMPTY_EVENT_FROM);
         }
-        if (to.isEmpty()) {
+        if (toText.isEmpty()) {
             throw new SerinaException(SerinaError.EMPTY_EVENT_TO);
+        }
+
+        LocalDate from = DateParser.parseInputDate(fromText);
+        LocalDate to = DateParser.parseInputDate(toText);
+        if (to.isBefore(from)) {
+            throw new SerinaException(SerinaError.INVALID_EVENT_DATE_RANGE);
         }
 
         return new Event(description, from, to);
@@ -182,6 +195,27 @@ public class Serina {
      */
     private static Task deleteTask(List<Task> tasks, String taskNumberText) throws SerinaException {
         return tasks.remove(getTaskIndex(tasks, taskNumberText));
+    }
+
+    /**
+     * Returns tasks that happen on the date entered by the user.
+     *
+     * @throws SerinaException if the date is empty or not in the expected format
+     */
+    private static List<Task> findTasks(List<Task> tasks, String dateText) throws SerinaException {
+        String trimmedDateText = dateText.trim();
+        if (trimmedDateText.isEmpty()) {
+            throw new SerinaException(SerinaError.EMPTY_FIND_DATE);
+        }
+
+        LocalDate date = DateParser.parseInputDate(trimmedDateText);
+        List<Task> matchingTasks = new ArrayList<>();
+        for (Task task : tasks) {
+            if (task.isOccurringOn(date)) {
+                matchingTasks.add(task);
+            }
+        }
+        return matchingTasks;
     }
 
     /**
@@ -254,6 +288,15 @@ public class Serina {
     private static void showList(List<Task> tasks) {
         printLine();
         System.out.println(MESSAGE_PREFIX + "Here are the tasks in your list:");
+        for (int i = 0; i < tasks.size(); i++) {
+            System.out.println(MESSAGE_PREFIX + (i + 1) + "." + tasks.get(i));
+        }
+        printLine();
+    }
+
+    private static void showMatchingTasks(List<Task> tasks) {
+        printLine();
+        System.out.println(MESSAGE_PREFIX + "Here are the matching tasks in your list:");
         for (int i = 0; i < tasks.size(); i++) {
             System.out.println(MESSAGE_PREFIX + (i + 1) + "." + tasks.get(i));
         }
