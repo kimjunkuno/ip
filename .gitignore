@@ -1,10 +1,21 @@
-# Default ignored files
-/shelf/
-/.idea/workspace.xml
-# Editor-based HTTP Client requests
-/httpRequests/
-# Ignored default folder with query files
-/queries/
-# Datasource local storage ignored files
-/dataSources/
-/dataSources.local.xml
+# IDEA files
+/.idea/
+/out/
+/*.iml
+
+# Gradle build files
+/.gradle/
+/build/
+src/main/resources/docs/
+
+# MacOS custom attributes files created by Finder
+.DS_Store
+*.iml
+bin/
+
+# Temp files
+_temp/
+
+/text-ui-test/ACTUAL.TXT
+text-ui-test/EXPECTED-UNIX.TXT
+*.class
