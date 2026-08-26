@@ -308,3 +308,23 @@ Files changed:
 - `src/main/java/serina/SerinaError.java`
 - `AI.md`
 - `test-ui.md`
+
+## JUnit Test Coverage
+
+Testing target:
+
+- Keep JUnit tests focused on approximately the top 50% highest-value methods in the codebase.
+- Prioritize methods containing complex, core, or critical business logic over trivial accessors and boilerplate.
+- Update the JUnit tests after every code change so the test suite continues to meet this coverage target.
+
+What Codex did:
+
+- Added `EventTest` in the matching `serina.task` package under Gradle's conventional `src/test/java` source tree.
+- Tested inclusive event date matching at and around both date boundaries.
+- Tested user-facing event formatting for both not-done and done tasks.
+- Tested save-file serialization, including completion status and escaping special characters.
+
+Files changed:
+
+- `src/test/java/serina/task/EventTest.java`
+- `AI.md`
