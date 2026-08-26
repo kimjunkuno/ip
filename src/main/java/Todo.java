@@ -11,6 +11,16 @@ public class Todo extends Task {
         super(description);
     }
 
+    /**
+     * Creates a todo task with the given description and saved status.
+     *
+     * @param description text describing the task
+     * @param status saved completion status
+     */
+    public Todo(String description, TaskStatus status) {
+        super(description, status);
+    }
+
     @Override
     protected TaskType getTaskType() {
         return TaskType.TODO;

@@ -12,7 +12,10 @@ public enum SerinaError {
     EMPTY_EVENT_FROM("Sorry captain, events need a /from time.", false),
     EMPTY_EVENT_TO("Sorry captain, events need a /to time.", false),
     INVALID_DEADLINE_FORMAT("Sorry captain, please use: deadline <task> /by <time>", false),
-    INVALID_EVENT_FORMAT("Sorry captain, please use: event <task> /from <start> /to <end>", false);
+    INVALID_EVENT_FORMAT("Sorry captain, please use: event <task> /from <start> /to <end>", false),
+    LOAD_TOO_MANY_TASKS("Sorry captain, I found more than 100 saved tasks.", false),
+    LOAD_FAILED("Sorry captain, I couldn't load your saved tasks.", false),
+    SAVE_FAILED("Sorry captain, I couldn't save your tasks right now.", false);
 
     private final String message;
     private final boolean shouldExit;

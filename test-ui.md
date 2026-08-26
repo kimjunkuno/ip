@@ -1,6 +1,6 @@
 # Serina UI Test Cases
 
-This file records console-based test cases for Serina after Levels 1-6 and A-enums. Each test lists the user input sequence and the key output that should appear.
+This file records console-based test cases for Serina after Levels 1-9 and A-enums. Each test lists the user input sequence and the key output that should appear.
 
 ## How To Use
 
@@ -493,4 +493,286 @@ Got it. I've added this task:
 Now you have 100 tasks in the list.
 You've reached the maximum number of tasks.
 Bye. Hope to see you again soon!
+```
+
+## Level 7 (Save)
+
+### Test 7.1 - Save Added Tasks To Disk
+
+Input:
+
+```text
+todo read book
+deadline return book /by June 6th
+event project meeting /from Aug 6th 2pm /to 4pm
+bye
+```
+
+Expected key output:
+
+```text
+Got it. I've added this task:
+  [T][ ] read book
+Got it. I've added this task:
+  [D][ ] return book (by: June 6th)
+Got it. I've added this task:
+  [E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+Bye. Hope to see you again soon!
+```
+
+Expected save file at `data/serina.txt`:
+
+```text
+T | 0 | read book
+D | 0 | return book | June 6th
+E | 0 | project meeting | Aug 6th 2pm | 4pm
+```
+
+### Test 7.2 - Save Marked And Deleted Task Changes To Disk
+
+Input:
+
+```text
+todo read book
+todo return book
+mark 1
+delete 2
+bye
+```
+
+Expected key output:
+
+```text
+Nice! I've marked this task as done:
+  [T][X] read book
+Noted. I've removed this task:
+  [T][ ] return book
+Bye. Hope to see you again soon!
+```
+
+Expected save file at `data/serina.txt`:
+
+```text
+T | 1 | read book
+```
+
+## Level 8 (Load)
+
+### Test 8.1 - Load Saved Tasks On Startup
+
+Starting save file at `data/serina.txt`:
+
+```text
+T | 1 | read book
+D | 0 | return book | June 6th
+E | 0 | project meeting | Aug 6th 2pm | 4pm
+```
+
+Input:
+
+```text
+list
+bye
+```
+
+Expected key output:
+
+```text
+Here are the tasks in your list:
+1.[T][X] read book
+2.[D][ ] return book (by: June 6th)
+3.[E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+Bye. Hope to see you again soon!
+```
+
+### Test 8.2 - Loaded Tasks Can Still Be Updated And Saved
+
+Starting save file at `data/serina.txt`:
+
+```text
+T | 0 | read book
+D | 0 | return book | June 6th
+```
+
+Input:
+
+```text
+mark 2
+delete 1
+bye
+```
+
+Expected key output:
+
+```text
+Nice! I've marked this task as done:
+  [D][X] return book (by: June 6th)
+Noted. I've removed this task:
+  [T][ ] read book
+Bye. Hope to see you again soon!
+```
+
+Expected save file at `data/serina.txt`:
+
+```text
+D | 1 | return book | June 6th
+```
+
+## Level 9 (Edge Cases)
+
+### Test 9.1 - Save And Load Text Containing File Delimiters
+
+Input:
+
+```text
+todo read | review notes
+deadline submit \ draft /by Friday | 5pm
+bye
+```
+
+Expected key output:
+
+```text
+Got it. I've added this task:
+  [T][ ] read | review notes
+Got it. I've added this task:
+  [D][ ] submit \ draft (by: Friday | 5pm)
+Bye. Hope to see you again soon!
+```
+
+Expected save file at `data/serina.txt`:
+
+```text
+T | 0 | read \| review notes
+D | 0 | submit \\ draft | Friday \| 5pm
+```
+
+Follow-up input using the same save file:
+
+```text
+list
+bye
+```
+
+Expected key output:
+
+```text
+Here are the tasks in your list:
+1.[T][ ] read | review notes
+2.[D][ ] submit \ draft (by: Friday | 5pm)
+Bye. Hope to see you again soon!
+```
+
+### Test 9.2 - Ignore Blank Lines In Save File
+
+Starting save file at `data/serina.txt`:
+
+```text
+
+T | 0 | read book
+
+D | 1 | return book | June 6th
+
+```
+
+Input:
+
+```text
+list
+bye
+```
+
+Expected key output:
+
+```text
+Here are the tasks in your list:
+1.[T][ ] read book
+2.[D][X] return book (by: June 6th)
+Bye. Hope to see you again soon!
+```
+
+### Test 9.3 - Handle Malformed Save File Gracefully
+
+Starting save file at `data/serina.txt`:
+
+```text
+X | 0 | unknown type task
+```
+
+Input:
+
+```text
+list
+bye
+```
+
+Expected key output:
+
+```text
+Hello! I'm Serina
+What can I do for you?
+Sorry captain, I couldn't load your saved tasks.
+Here are the tasks in your list:
+Bye. Hope to see you again soon!
+```
+
+### Test 9.4 - Handle Too Many Saved Tasks Gracefully
+
+Starting save file at `data/serina.txt`:
+
+```text
+T | 0 | saved task 1
+T | 0 | saved task 2
+...
+T | 0 | saved task 101
+```
+
+Input:
+
+```text
+list
+bye
+```
+
+Expected key output:
+
+```text
+Hello! I'm Serina
+What can I do for you?
+Sorry captain, I found more than 100 saved tasks.
+Here are the tasks in your list:
+Bye. Hope to see you again soon!
+```
+
+### Test 9.5 - Start Normally When Data File And Folder Do Not Exist
+
+Starting state:
+
+```text
+No data folder and no data/serina.txt file.
+```
+
+Input:
+
+```text
+list
+todo first run task
+bye
+```
+
+Expected key output:
+
+```text
+Hello! I'm Serina
+What can I do for you?
+Here are the tasks in your list:
+Got it. I've added this task:
+  [T][ ] first run task
+Bye. Hope to see you again soon!
+```
+
+Expected save file at `data/serina.txt`:
+
+```text
+T | 0 | first run task
 ```

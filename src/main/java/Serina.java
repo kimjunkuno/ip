@@ -17,9 +17,8 @@ public class Serina {
      */
     public static void main(String[] args) {
         try (Scanner scanner = new Scanner(System.in)) {
-            List<Task> tasks = new ArrayList<>();
-
             showGreeting();
+            List<Task> tasks = loadTasks();
 
             while (scanner.hasNextLine()) {
                 String input = scanner.nextLine().trim();
@@ -35,17 +34,21 @@ public class Serina {
                     } else if (input.equals("mark") || input.startsWith("mark ")) {
                         Task task = getTask(tasks, input.substring("mark".length()));
                         task.markAsDone();
+                        Storage.saveTasks(tasks);
                         showMarkedTask(task);
                     } else if (input.equals("unmark") || input.startsWith("unmark ")) {
                         Task task = getTask(tasks, input.substring("unmark".length()));
                         task.markAsNotDone();
+                        Storage.saveTasks(tasks);
                         showUnmarkedTask(task);
                     } else if (input.equals("delete") || input.startsWith("delete ")) {
                         Task task = deleteTask(tasks, input.substring("delete".length()));
+                        Storage.saveTasks(tasks);
                         showDeletedTask(task, tasks.size());
                     } else {
                         Task task = createTask(input);
                         addTask(tasks, task);
+                        Storage.saveTasks(tasks);
                         showAddedTask(task, tasks.size());
                     }
                 } catch (SerinaException e) {
@@ -56,6 +59,15 @@ public class Serina {
                     }
                 }
             }
+        }
+    }
+
+    private static List<Task> loadTasks() {
+        try {
+            return Storage.loadTasks();
+        } catch (SerinaException e) {
+            showMessage(e.getMessage());
+            return new ArrayList<>();
         }
     }
 
