@@ -25,6 +25,12 @@ public class Storage {
     private static final int MAX_TASKS = 100;
 
     /**
+     * Prevents instantiation of this static storage utility class.
+     */
+    private Storage() {
+    }
+
+    /**
      * Loads tasks from Serina's save file.
      *
      * @return saved tasks, or an empty list if there is no save file yet
@@ -68,6 +74,12 @@ public class Storage {
         }
     }
 
+    /**
+     * Converts tasks into the lines used by Serina's save-file format.
+     *
+     * @param tasks tasks to serialize
+     * @return one serialized line for each task
+     */
     private static List<String> toFileLines(List<Task> tasks) {
         List<String> lines = new ArrayList<>();
         for (Task task : tasks) {
@@ -76,6 +88,13 @@ public class Storage {
         return lines;
     }
 
+    /**
+     * Reconstructs a task from one line of the save file.
+     *
+     * @param line serialized task data
+     * @return the reconstructed task
+     * @throws SerinaException if the line does not follow the expected format
+     */
     private static Task parseTask(String line) throws SerinaException {
         List<String> parts = splitFileLine(line);
         if (parts.size() < 3) {
@@ -110,6 +129,16 @@ public class Storage {
         }
     }
 
+    /**
+     * Reconstructs an event and validates that its end date is not before its start date.
+     *
+     * @param description event description
+     * @param fromText event start date in save-file format
+     * @param toText event end date in save-file format
+     * @param status saved completion status
+     * @return the reconstructed event
+     * @throws SerinaException if either date is invalid or the date range is reversed
+     */
     private static Event parseEvent(String description, String fromText, String toText, TaskStatus status)
             throws SerinaException {
         LocalDate from = DateParser.parseFileDate(fromText);
@@ -121,6 +150,12 @@ public class Storage {
         return new Event(description, from, to, status);
     }
 
+    /**
+     * Splits a save-file line on unescaped delimiters and restores escaped characters.
+     *
+     * @param line serialized task data
+     * @return the decoded fields in the line
+     */
     private static List<String> splitFileLine(String line) {
         List<String> parts = new ArrayList<>();
         StringBuilder currentPart = new StringBuilder();
@@ -142,6 +177,12 @@ public class Storage {
         return parts;
     }
 
+    /**
+     * Checks whether a character can be escaped in the save-file format.
+     *
+     * @param character character following an escape marker
+     * @return {@code true} for a backslash or field delimiter
+     */
     private static boolean isEscapedCharacter(char character) {
         return character == '\\' || character == '|';
     }

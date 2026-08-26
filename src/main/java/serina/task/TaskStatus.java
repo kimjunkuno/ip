@@ -7,7 +7,9 @@ import serina.exception.SerinaException;
  * Represents whether a task is done and how that status is displayed.
  */
 public enum TaskStatus {
+    /** A completed task. */
     DONE("X", "1"),
+    /** A task that has not been completed. */
     NOT_DONE(" ", "0");
 
     private final String icon;
@@ -26,6 +28,8 @@ public enum TaskStatus {
 
     /**
      * Returns the icon shown when displaying this task status.
+     *
+     * @return the display icon
      */
     public String getIcon() {
         return icon;
@@ -33,6 +37,8 @@ public enum TaskStatus {
 
     /**
      * Returns the compact value written to the save file.
+     *
+     * @return the save-file value
      */
     public String getFileValue() {
         return fileValue;
@@ -41,6 +47,8 @@ public enum TaskStatus {
     /**
      * Returns the status matching a value from the save file.
      *
+     * @param value save-file value to parse
+     * @return the matching status
      * @throws SerinaException if the value does not match a supported task status
      */
     public static TaskStatus parseFileValue(String value) throws SerinaException {

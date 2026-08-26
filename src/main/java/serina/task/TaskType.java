@@ -7,8 +7,11 @@ import serina.exception.SerinaException;
  * Represents the supported task types and their display icons.
  */
 public enum TaskType {
+    /** A task without an associated date. */
     TODO("T"),
+    /** A task due on a specific date. */
     DEADLINE("D"),
+    /** A task occurring over a date range. */
     EVENT("E");
 
     private final String icon;
@@ -24,6 +27,8 @@ public enum TaskType {
 
     /**
      * Returns the icon shown when displaying this task type.
+     *
+     * @return the display icon
      */
     public String getIcon() {
         return icon;
@@ -32,6 +37,8 @@ public enum TaskType {
     /**
      * Returns the task type matching a value from the save file.
      *
+     * @param value save-file value to parse
+     * @return the matching task type
      * @throws SerinaException if the value does not match a supported task type
      */
     public static TaskType parseFileValue(String value) throws SerinaException {

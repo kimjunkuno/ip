@@ -328,3 +328,32 @@ Files changed:
 
 - `src/test/java/serina/task/EventTest.java`
 - `AI.md`
+
+## Level A-Javadoc
+
+Instruction:
+
+Add JavaDoc header comments to the Java code, with the stretch goal of documenting all non-private classes and
+methods as well as non-trivial private methods.
+
+What Codex did:
+
+- Audited every class and method in `src/main/java` for JavaDoc coverage.
+- Retained the existing JavaDoc on all non-private classes, constructors, and methods.
+- Added JavaDoc to task subtype overrides so their display, persistence, and date-matching contracts are explicit.
+- Added JavaDoc to non-trivial private helpers responsible for command loading, date parsing, storage parsing,
+  serialization, task-number validation, and numbered task output.
+- Included parameter, return-value, and exception details where they clarify the method contract.
+
+Files changed:
+
+- `src/main/java/serina/Serina.java`
+- `src/main/java/serina/parser/DateParser.java`
+- `src/main/java/serina/storage/Storage.java`
+- `src/main/java/serina/task/Deadline.java`
+- `src/main/java/serina/task/Event.java`
+- `src/main/java/serina/task/Task.java`
+- `src/main/java/serina/task/TaskList.java`
+- `src/main/java/serina/task/Todo.java`
+- `src/main/java/serina/ui/Ui.java`
+- `AI.md`
