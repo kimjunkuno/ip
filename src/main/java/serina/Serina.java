@@ -1,15 +1,12 @@
 package serina;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Runs Serina, a simple chatbot that stores tasks until the user says bye.
  */
 public class Serina {
-    private static final int MAX_TASKS = 100;
-
     /**
      * Starts Serina and processes user commands from standard input.
      *
@@ -18,7 +15,7 @@ public class Serina {
     public static void main(String[] args) {
         try (Ui ui = new Ui()) {
             ui.showGreeting();
-            List<Task> tasks = loadTasks(ui);
+            TaskList tasks = loadTasks(ui);
 
             while (ui.hasNextCommand()) {
                 String input = ui.readCommand();
@@ -32,28 +29,29 @@ public class Serina {
                     if (input.equals("help")) {
                         ui.showHelp();
                     } else if (input.equals("list")) {
-                        ui.showList(tasks);
+                        ui.showList(tasks.asList());
                     } else if (input.equals("mark") || input.startsWith("mark ")) {
-                        Task task = getTask(tasks, input.substring("mark".length()));
+                        Task task = tasks.getTask(input.substring("mark".length()));
                         task.markAsDone();
-                        Storage.saveTasks(tasks);
+                        Storage.saveTasks(tasks.asList());
                         ui.showMarkedTask(task);
                     } else if (input.equals("unmark") || input.startsWith("unmark ")) {
-                        Task task = getTask(tasks, input.substring("unmark".length()));
+                        Task task = tasks.getTask(input.substring("unmark".length()));
                         task.markAsNotDone();
-                        Storage.saveTasks(tasks);
+                        Storage.saveTasks(tasks.asList());
                         ui.showUnmarkedTask(task);
                     } else if (input.equals("delete") || input.startsWith("delete ")) {
-                        Task task = deleteTask(tasks, input.substring("delete".length()));
-                        Storage.saveTasks(tasks);
+                        Task task = tasks.delete(input.substring("delete".length()));
+                        Storage.saveTasks(tasks.asList());
                         ui.showDeletedTask(task, tasks.size());
                     } else if (input.equals("find") || input.startsWith("find ")) {
-                        List<Task> matchingTasks = findTasks(tasks, input.substring("find".length()));
+                        LocalDate date = parseFindDate(input.substring("find".length()));
+                        List<Task> matchingTasks = tasks.find(date);
                         ui.showMatchingTasks(matchingTasks);
                     } else {
                         Task task = createTask(input);
-                        addTask(tasks, task);
-                        Storage.saveTasks(tasks);
+                        tasks.add(task);
+                        Storage.saveTasks(tasks.asList());
                         ui.showAddedTask(task, tasks.size());
                     }
                 } catch (SerinaException e) {
@@ -67,26 +65,13 @@ public class Serina {
         }
     }
 
-    private static List<Task> loadTasks(Ui ui) {
+    private static TaskList loadTasks(Ui ui) {
         try {
-            return Storage.loadTasks();
+            return new TaskList(Storage.loadTasks());
         } catch (SerinaException e) {
             ui.showMessage(e.getMessage());
-            return new ArrayList<>();
+            return new TaskList();
         }
-    }
-
-    /**
-     * Stores a task in the task list.
-     *
-     * @throws SerinaException if Serina has no more storage space for tasks
-     */
-    private static void addTask(List<Task> tasks, Task task) throws SerinaException {
-        if (tasks.size() >= MAX_TASKS) {
-            throw new SerinaException(SerinaError.MAX_TASKS);
-        }
-
-        tasks.add(task);
     }
 
     /**
@@ -179,60 +164,17 @@ public class Serina {
     }
 
     /**
-     * Returns the task matching the user's one-based task number.
-     *
-     * @throws SerinaException if the given text is not a valid stored task number
-     */
-    private static Task getTask(List<Task> tasks, String taskNumberText) throws SerinaException {
-        return tasks.get(getTaskIndex(tasks, taskNumberText));
-    }
-
-    /**
-     * Removes and returns the task matching the user's one-based task number.
-     *
-     * @throws SerinaException if the given text is not a valid stored task number
-     */
-    private static Task deleteTask(List<Task> tasks, String taskNumberText) throws SerinaException {
-        return tasks.remove(getTaskIndex(tasks, taskNumberText));
-    }
-
-    /**
-     * Returns tasks that happen on the date entered by the user.
+     * Parses the date entered in a find command.
      *
      * @throws SerinaException if the date is empty or not in the expected format
      */
-    private static List<Task> findTasks(List<Task> tasks, String dateText) throws SerinaException {
+    private static LocalDate parseFindDate(String dateText) throws SerinaException {
         String trimmedDateText = dateText.trim();
         if (trimmedDateText.isEmpty()) {
             throw new SerinaException(SerinaError.EMPTY_FIND_DATE);
         }
 
-        LocalDate date = DateParser.parseInputDate(trimmedDateText);
-        List<Task> matchingTasks = new ArrayList<>();
-        for (Task task : tasks) {
-            if (task.isOccurringOn(date)) {
-                matchingTasks.add(task);
-            }
-        }
-        return matchingTasks;
-    }
-
-    /**
-     * Converts the user's one-based task number to a zero-based list index.
-     *
-     * @throws SerinaException if the given text is not a valid stored task number
-     */
-    private static int getTaskIndex(List<Task> tasks, String taskNumberText) throws SerinaException {
-        try {
-            int taskNumber = Integer.parseInt(taskNumberText.trim());
-            if (taskNumber < 1 || taskNumber > tasks.size()) {
-                throw new SerinaException(SerinaError.INVALID_TASK_NUMBER);
-            }
-
-            return taskNumber - 1;
-        } catch (NumberFormatException e) {
-            throw new SerinaException(SerinaError.INVALID_TASK_NUMBER);
-        }
+        return DateParser.parseInputDate(trimmedDateText);
     }
 
 }
