@@ -3,14 +3,11 @@ package serina;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 /**
  * Runs Serina, a simple chatbot that stores tasks until the user says bye.
  */
 public class Serina {
-    private static final String LINE = "    ____________________________________________________________";
-    private static final String MESSAGE_PREFIX = "     ";
     private static final int MAX_TASKS = 100;
 
     /**
@@ -19,50 +16,50 @@ public class Serina {
      * @param args command line arguments, which are not used
      */
     public static void main(String[] args) {
-        try (Scanner scanner = new Scanner(System.in)) {
-            showGreeting();
-            List<Task> tasks = loadTasks();
+        try (Ui ui = new Ui()) {
+            ui.showGreeting();
+            List<Task> tasks = loadTasks(ui);
 
-            while (scanner.hasNextLine()) {
-                String input = scanner.nextLine().trim();
+            while (ui.hasNextCommand()) {
+                String input = ui.readCommand();
 
                 if (input.equals("bye")) {
-                    showGoodbye();
+                    ui.showGoodbye();
                     break;
                 }
 
                 try {
                     if (input.equals("help")) {
-                        showHelp();
+                        ui.showHelp();
                     } else if (input.equals("list")) {
-                        showList(tasks);
+                        ui.showList(tasks);
                     } else if (input.equals("mark") || input.startsWith("mark ")) {
                         Task task = getTask(tasks, input.substring("mark".length()));
                         task.markAsDone();
                         Storage.saveTasks(tasks);
-                        showMarkedTask(task);
+                        ui.showMarkedTask(task);
                     } else if (input.equals("unmark") || input.startsWith("unmark ")) {
                         Task task = getTask(tasks, input.substring("unmark".length()));
                         task.markAsNotDone();
                         Storage.saveTasks(tasks);
-                        showUnmarkedTask(task);
+                        ui.showUnmarkedTask(task);
                     } else if (input.equals("delete") || input.startsWith("delete ")) {
                         Task task = deleteTask(tasks, input.substring("delete".length()));
                         Storage.saveTasks(tasks);
-                        showDeletedTask(task, tasks.size());
+                        ui.showDeletedTask(task, tasks.size());
                     } else if (input.equals("find") || input.startsWith("find ")) {
                         List<Task> matchingTasks = findTasks(tasks, input.substring("find".length()));
-                        showMatchingTasks(matchingTasks);
+                        ui.showMatchingTasks(matchingTasks);
                     } else {
                         Task task = createTask(input);
                         addTask(tasks, task);
                         Storage.saveTasks(tasks);
-                        showAddedTask(task, tasks.size());
+                        ui.showAddedTask(task, tasks.size());
                     }
                 } catch (SerinaException e) {
-                    showMessage(e.getMessage());
+                    ui.showMessage(e.getMessage());
                     if (e.shouldExit()) {
-                        showGoodbye();
+                        ui.showGoodbye();
                         break;
                     }
                 }
@@ -70,11 +67,11 @@ public class Serina {
         }
     }
 
-    private static List<Task> loadTasks() {
+    private static List<Task> loadTasks(Ui ui) {
         try {
             return Storage.loadTasks();
         } catch (SerinaException e) {
-            showMessage(e.getMessage());
+            ui.showMessage(e.getMessage());
             return new ArrayList<>();
         }
     }
@@ -238,92 +235,4 @@ public class Serina {
         }
     }
 
-    private static void showGreeting() {
-        printLine();
-        System.out.println(MESSAGE_PREFIX + "Hello! I'm Serina");
-        System.out.println(MESSAGE_PREFIX + "What can I do for you?");
-        System.out.println(MESSAGE_PREFIX + "Type help to see the available commands.");
-        printLine();
-    }
-
-    private static void showHelp() {
-        printLine();
-        System.out.println(MESSAGE_PREFIX + "Here are the commands I can respond to:");
-        System.out.println(MESSAGE_PREFIX + "help - show this command list");
-        System.out.println(MESSAGE_PREFIX + "todo <task> - add a todo");
-        System.out.println(MESSAGE_PREFIX + "deadline <task> /by <yyyy-MM-dd> - add a deadline");
-        System.out.println(MESSAGE_PREFIX
-                + "event <task> /from <yyyy-MM-dd> /to <yyyy-MM-dd> - add an event");
-        System.out.println(MESSAGE_PREFIX + "list - show all tasks");
-        System.out.println(MESSAGE_PREFIX + "mark <number> - mark a task as done");
-        System.out.println(MESSAGE_PREFIX + "unmark <number> - mark a task as not done");
-        System.out.println(MESSAGE_PREFIX + "delete <number> - remove a task");
-        System.out.println(MESSAGE_PREFIX + "find <yyyy-MM-dd> - find tasks occurring on a date");
-        System.out.println(MESSAGE_PREFIX + "bye - exit Serina");
-        printLine();
-    }
-
-    private static void showGoodbye() {
-        printLine();
-        System.out.println(MESSAGE_PREFIX + "Bye. Hope to see you again soon!");
-        printLine();
-    }
-
-    private static void showAddedTask(Task task, int taskCount) {
-        printLine();
-        System.out.println(MESSAGE_PREFIX + "Got it. I've added this task:");
-        System.out.println(MESSAGE_PREFIX + "  " + task);
-        System.out.println(MESSAGE_PREFIX + "Now you have " + taskCount + " tasks in the list.");
-        printLine();
-    }
-
-    private static void showMarkedTask(Task task) {
-        printLine();
-        System.out.println(MESSAGE_PREFIX + "Nice! I've marked this task as done:");
-        System.out.println(MESSAGE_PREFIX + "  " + task);
-        printLine();
-    }
-
-    private static void showUnmarkedTask(Task task) {
-        printLine();
-        System.out.println(MESSAGE_PREFIX + "OK, I've marked this task as not done yet:");
-        System.out.println(MESSAGE_PREFIX + "  " + task);
-        printLine();
-    }
-
-    private static void showDeletedTask(Task task, int taskCount) {
-        printLine();
-        System.out.println(MESSAGE_PREFIX + "Noted. I've removed this task:");
-        System.out.println(MESSAGE_PREFIX + "  " + task);
-        System.out.println(MESSAGE_PREFIX + "Now you have " + taskCount + " tasks in the list.");
-        printLine();
-    }
-
-    private static void showMessage(String message) {
-        printLine();
-        System.out.println(MESSAGE_PREFIX + message);
-        printLine();
-    }
-
-    private static void showList(List<Task> tasks) {
-        printLine();
-        System.out.println(MESSAGE_PREFIX + "Here are the tasks in your list:");
-        for (int i = 0; i < tasks.size(); i++) {
-            System.out.println(MESSAGE_PREFIX + (i + 1) + "." + tasks.get(i));
-        }
-        printLine();
-    }
-
-    private static void showMatchingTasks(List<Task> tasks) {
-        printLine();
-        System.out.println(MESSAGE_PREFIX + "Here are the matching tasks in your list:");
-        for (int i = 0; i < tasks.size(); i++) {
-            System.out.println(MESSAGE_PREFIX + (i + 1) + "." + tasks.get(i));
-        }
-        printLine();
-    }
-
-    private static void printLine() {
-        System.out.println(LINE);
-    }
 }
