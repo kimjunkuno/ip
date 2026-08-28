@@ -36,6 +36,10 @@ with the SE-EDU basic and intermediate Java coding standard described by that sk
 
 ## Git
 
+For every commit-message proposal, commit creation, or branch-naming task in this repository, load and follow the
+project skill at `.agents/skills/seedu-git-standard/SKILL.md`. All future commits must comply with the SE-EDU Git
+conventions described by that skill.
+
 Use lightweight tags unless the user requests an annotated tag.
 When proposing or creating a commit message, include enough detail to explain the rationale for the change.
 Do not commit or push unless explicitly asked.
