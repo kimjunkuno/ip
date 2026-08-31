@@ -228,7 +228,7 @@ Files changed:
 - `AI.md`
 - `test-ui.md`
 
-## Storage (Edge Cases)
+## Storage(Edge Cases)
 
 Instruction:
 
