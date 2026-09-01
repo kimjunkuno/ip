@@ -16,7 +16,7 @@ public class TaskListTest {
     private final Event bookClubMeeting = new Event(
             "book club meeting", LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 1));
     private final Todo buyBread = new Todo("buy bread");
-    private final TaskList tasks = new TaskList(List.of(readBook, returnBook, bookClubMeeting, buyBread));
+    private final TaskList tasks = new TaskList(readBook, returnBook, bookClubMeeting, buyBread);
 
     @Test
     public void find_keywordMatchingMultipleTasks_returnsMatchesInOriginalOrder() {

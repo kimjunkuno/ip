@@ -33,6 +33,15 @@ public class TaskList {
     }
 
     /**
+     * Creates a task list containing the supplied individual tasks.
+     *
+     * @param tasks Initial tasks in their desired list order.
+     */
+    public TaskList(Task... tasks) {
+        this(List.of(tasks));
+    }
+
+    /**
      * Adds a task to the list.
      *
      * @param task Task to add.
