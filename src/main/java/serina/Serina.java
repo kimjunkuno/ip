@@ -104,17 +104,17 @@ public class Serina {
     public CommandResult executeCommand(String input) {
         String command = input.trim();
         if (command.equals("bye")) {
-            return new CommandResult(List.of(ResponseFormatter.formatGoodbye()), true);
+            return new CommandResult(true, ResponseFormatter.formatGoodbye());
         }
 
         try {
             String response = processCommand(command);
-            return new CommandResult(List.of(response), false);
+            return new CommandResult(false, response);
         } catch (SerinaException e) {
             if (e.shouldExit()) {
-                return new CommandResult(List.of(e.getMessage(), ResponseFormatter.formatGoodbye()), true);
+                return new CommandResult(true, e.getMessage(), ResponseFormatter.formatGoodbye());
             }
-            return new CommandResult(List.of(e.getMessage()), false);
+            return new CommandResult(false, e.getMessage());
         }
     }
 

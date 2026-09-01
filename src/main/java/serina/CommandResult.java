@@ -21,6 +21,16 @@ public class CommandResult {
     }
 
     /**
+     * Creates a command result from individual responses and the given exit behavior.
+     *
+     * @param shouldExit Whether the application should stop accepting commands.
+     * @param responses Messages to show in order.
+     */
+    public CommandResult(boolean shouldExit, String... responses) {
+        this(List.of(responses), shouldExit);
+    }
+
+    /**
      * Returns the messages produced by the command.
      *
      * @return Responses in display order.

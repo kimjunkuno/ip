@@ -37,7 +37,7 @@ public class SerinaTest {
 
         CommandResult result = serina.executeCommand("help");
 
-        assertEquals(List.of(String.join("\n",
+        assertResponses(result, String.join("\n",
                 "Here are the commands I can respond to:",
                 "help - show this command list",
                 "todo <task> - add a todo",
@@ -48,7 +48,7 @@ public class SerinaTest {
                 "unmark <number> - mark a task as not done",
                 "delete <number> - remove a task",
                 "find <keyword> - find tasks containing a keyword",
-                "bye - exit Serina")), result.getResponses());
+                "bye - exit Serina"));
         assertFalse(result.shouldExit());
     }
 
@@ -62,13 +62,13 @@ public class SerinaTest {
         Serina reloadedSerina = new Serina(new Storage(saveFile));
         CommandResult reloadedListResult = reloadedSerina.executeCommand("list");
 
-        assertEquals(List.of(String.join("\n",
+        assertResponses(addResult, String.join("\n",
                 "Got it. I've added this task:",
                 "  [T][ ] read book",
-                "Now you have 1 tasks in the list.")), addResult.getResponses());
-        assertEquals(List.of(String.join("\n",
+                "Now you have 1 tasks in the list."));
+        assertResponses(listResult, String.join("\n",
                 "Here are the tasks in your list:",
-                "1.[T][ ] read book")), listResult.getResponses());
+                "1.[T][ ] read book"));
         assertEquals(listResult.getResponses(), reloadedListResult.getResponses());
     }
 
@@ -78,9 +78,8 @@ public class SerinaTest {
 
         CommandResult result = serina.executeCommand("nonsense");
 
-        assertEquals(List.of(
-                "Sorry captain, could you rephrase that for me? Type help to see the available commands."),
-                result.getResponses());
+        assertResponses(result,
+                "Sorry captain, could you rephrase that for me? Type help to see the available commands.");
         assertFalse(result.shouldExit());
     }
 
@@ -90,7 +89,7 @@ public class SerinaTest {
 
         CommandResult result = serina.executeCommand("bye");
 
-        assertEquals(List.of("Bye. Hope to see you again soon!"), result.getResponses());
+        assertResponses(result, "Bye. Hope to see you again soon!");
         assertTrue(result.shouldExit());
     }
 
@@ -102,8 +101,7 @@ public class SerinaTest {
         Serina serina = new Serina(new Storage(saveFile));
 
         assertEquals(List.of("Sorry captain, I couldn't load your saved tasks."), serina.getStartupMessages());
-        assertEquals(List.of("Here are the tasks in your list:"),
-                serina.executeCommand("list").getResponses());
+        assertResponses(serina.executeCommand("list"), "Here are the tasks in your list:");
     }
 
     /**
@@ -111,5 +109,12 @@ public class SerinaTest {
      */
     private Serina createSerina() {
         return new Serina(new Storage(temporaryDirectory.resolve("serina.txt")));
+    }
+
+    /**
+     * Checks that a command produces the supplied responses in order.
+     */
+    private static void assertResponses(CommandResult result, String... expectedResponses) {
+        assertEquals(List.of(expectedResponses), result.getResponses());
     }
 }
