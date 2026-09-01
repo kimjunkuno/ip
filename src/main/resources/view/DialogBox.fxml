@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.StackPane?>
+
+<fx:root alignment="TOP_RIGHT" fillHeight="true" maxWidth="1.7976931348623157E308"
+         type="javafx.scene.layout.HBox" xmlns="http://javafx.com/javafx/17"
+         xmlns:fx="http://javafx.com/fxml/1">
+    <children>
+        <Label fx:id="messageLabel" maxWidth="1.7976931348623157E308"
+               minHeight="-Infinity" styleClass="message-bubble" wrapText="true"
+               HBox.hgrow="ALWAYS">
+            <HBox.margin>
+                <Insets left="8.0" right="8.0" />
+            </HBox.margin>
+            <padding>
+                <Insets bottom="9.0" left="11.0" right="11.0" top="9.0" />
+            </padding>
+        </Label>
+        <StackPane fx:id="avatarPlaceholder" maxHeight="40.0" maxWidth="40.0"
+                   minHeight="40.0" minWidth="40.0" prefHeight="40.0" prefWidth="40.0"
+                   styleClass="avatar-placeholder">
+            <children>
+                <ImageView fx:id="displayPicture" fitHeight="40.0" fitWidth="40.0"
+                           pickOnBounds="true" preserveRatio="true" />
+            </children>
+        </StackPane>
+    </children>
+</fx:root>

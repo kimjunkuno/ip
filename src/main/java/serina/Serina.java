@@ -15,86 +15,145 @@ import serina.task.Todo;
 import serina.ui.Ui;
 
 /**
- * Runs Serina, a simple chatbot that stores tasks until the user says bye.
+ * Processes Serina commands for console and graphical user interfaces.
  */
 public class Serina {
+    private final Storage storage;
+    private final TaskList tasks;
+    private final List<String> startupMessages;
+
     /**
-     * Prevents instantiation of this application entry-point class.
+     * Creates Serina using the default save-file location.
      */
-    private Serina() {
+    public Serina() {
+        this(new Storage());
     }
 
     /**
-     * Starts Serina and processes user commands from standard input.
+     * Creates Serina using the supplied storage location.
+     *
+     * @param storage Storage used to load and save tasks.
+     */
+    public Serina(Storage storage) {
+        this.storage = storage;
+
+        TaskList loadedTasks;
+        List<String> loadingMessages;
+        try {
+            loadedTasks = new TaskList(storage.loadTasks());
+            loadingMessages = List.of();
+        } catch (SerinaException e) {
+            loadedTasks = new TaskList();
+            loadingMessages = List.of(e.getMessage());
+        }
+
+        tasks = loadedTasks;
+        startupMessages = loadingMessages;
+    }
+
+    /**
+     * Starts Serina's command-line interface.
      *
      * @param args Command line arguments, which are not used.
      */
     public static void main(String[] args) {
+        Serina serina = new Serina();
+
         try (Ui ui = new Ui()) {
-            ui.showGreeting();
-            TaskList tasks = loadTasks(ui);
+            ui.showMessage(serina.getGreeting());
+            for (String message : serina.getStartupMessages()) {
+                ui.showMessage(message);
+            }
 
             while (ui.hasNextCommand()) {
-                String input = ui.readCommand();
-
-                if (input.equals("bye")) {
-                    ui.showGoodbye();
-                    break;
+                CommandResult result = serina.executeCommand(ui.readCommand());
+                for (String response : result.getResponses()) {
+                    ui.showMessage(response);
                 }
-
-                try {
-                    if (input.equals("help")) {
-                        ui.showHelp();
-                    } else if (input.equals("list")) {
-                        ui.showList(tasks.asList());
-                    } else if (input.equals("mark") || input.startsWith("mark ")) {
-                        Task task = tasks.getTask(input.substring("mark".length()));
-                        task.markAsDone();
-                        Storage.saveTasks(tasks.asList());
-                        ui.showMarkedTask(task);
-                    } else if (input.equals("unmark") || input.startsWith("unmark ")) {
-                        Task task = tasks.getTask(input.substring("unmark".length()));
-                        task.markAsNotDone();
-                        Storage.saveTasks(tasks.asList());
-                        ui.showUnmarkedTask(task);
-                    } else if (input.equals("delete") || input.startsWith("delete ")) {
-                        Task task = tasks.delete(input.substring("delete".length()));
-                        Storage.saveTasks(tasks.asList());
-                        ui.showDeletedTask(task, tasks.size());
-                    } else if (input.equals("find") || input.startsWith("find ")) {
-                        String keyword = parseFindKeyword(input.substring("find".length()));
-                        List<Task> matchingTasks = tasks.find(keyword);
-                        ui.showMatchingTasks(matchingTasks);
-                    } else {
-                        Task task = createTask(input);
-                        tasks.add(task);
-                        Storage.saveTasks(tasks.asList());
-                        ui.showAddedTask(task, tasks.size());
-                    }
-                } catch (SerinaException e) {
-                    ui.showMessage(e.getMessage());
-                    if (e.shouldExit()) {
-                        ui.showGoodbye();
-                        break;
-                    }
+                if (result.shouldExit()) {
+                    break;
                 }
             }
         }
     }
 
     /**
-     * Loads saved tasks, reporting a loading error and returning an empty list if loading fails.
+     * Returns Serina's greeting.
      *
-     * @param ui User interface used to report a loading error.
-     * @return The loaded task list, or an empty task list when the save file cannot be loaded.
+     * @return Greeting shown when a conversation starts.
      */
-    private static TaskList loadTasks(Ui ui) {
-        try {
-            return new TaskList(Storage.loadTasks());
-        } catch (SerinaException e) {
-            ui.showMessage(e.getMessage());
-            return new TaskList();
+    public String getGreeting() {
+        return ResponseFormatter.formatGreeting();
+    }
+
+    /**
+     * Returns messages produced while loading saved tasks.
+     *
+     * @return Loading warnings in display order.
+     */
+    public List<String> getStartupMessages() {
+        return startupMessages;
+    }
+
+    /**
+     * Processes one command and returns the responses to display.
+     *
+     * @param input Command entered by the user.
+     * @return Responses and exit behavior produced by the command.
+     */
+    public CommandResult executeCommand(String input) {
+        String command = input.trim();
+        if (command.equals("bye")) {
+            return new CommandResult(List.of(ResponseFormatter.formatGoodbye()), true);
         }
+
+        try {
+            String response = processCommand(command);
+            return new CommandResult(List.of(response), false);
+        } catch (SerinaException e) {
+            if (e.shouldExit()) {
+                return new CommandResult(List.of(e.getMessage(), ResponseFormatter.formatGoodbye()), true);
+            }
+            return new CommandResult(List.of(e.getMessage()), false);
+        }
+    }
+
+    /**
+     * Executes a command that does not directly end the conversation.
+     */
+    private String processCommand(String input) throws SerinaException {
+        if (input.equals("help")) {
+            return ResponseFormatter.formatHelp();
+        }
+        if (input.equals("list")) {
+            return ResponseFormatter.formatTaskList(tasks.asList());
+        }
+        if (input.equals("mark") || input.startsWith("mark ")) {
+            Task task = tasks.getTask(input.substring("mark".length()));
+            task.markAsDone();
+            storage.saveTasks(tasks.asList());
+            return ResponseFormatter.formatMarkedTask(task);
+        }
+        if (input.equals("unmark") || input.startsWith("unmark ")) {
+            Task task = tasks.getTask(input.substring("unmark".length()));
+            task.markAsNotDone();
+            storage.saveTasks(tasks.asList());
+            return ResponseFormatter.formatUnmarkedTask(task);
+        }
+        if (input.equals("delete") || input.startsWith("delete ")) {
+            Task task = tasks.delete(input.substring("delete".length()));
+            storage.saveTasks(tasks.asList());
+            return ResponseFormatter.formatDeletedTask(task, tasks.size());
+        }
+        if (input.equals("find") || input.startsWith("find ")) {
+            String keyword = parseFindKeyword(input.substring("find".length()));
+            return ResponseFormatter.formatMatchingTasks(tasks.find(keyword));
+        }
+
+        Task task = createTask(input);
+        tasks.add(task);
+        storage.saveTasks(tasks.asList());
+        return ResponseFormatter.formatAddedTask(task, tasks.size());
     }
 
     /**
