@@ -21,13 +21,25 @@ import serina.task.Todo;
  * Handles loading and saving Serina's tasks on the hard disk.
  */
 public class Storage {
-    private static final Path FILE_PATH = Path.of("data", "serina.txt");
+    private static final Path DEFAULT_FILE_PATH = Path.of("data", "serina.txt");
     private static final int MAX_TASKS = 100;
 
+    private final Path filePath;
+
     /**
-     * Prevents instantiation of this static storage utility class.
+     * Creates storage that uses Serina's default save-file location.
      */
-    private Storage() {
+    public Storage() {
+        this(DEFAULT_FILE_PATH);
+    }
+
+    /**
+     * Creates storage that reads and writes the specified save file.
+     *
+     * @param filePath Location of the save file.
+     */
+    public Storage(Path filePath) {
+        this.filePath = filePath;
     }
 
     /**
@@ -36,14 +48,14 @@ public class Storage {
      * @return Saved tasks, or an empty list if there is no save file yet.
      * @throws SerinaException If Serina is unable to read the save file.
      */
-    public static List<Task> loadTasks() throws SerinaException {
+    public List<Task> loadTasks() throws SerinaException {
         try {
-            if (!Files.exists(FILE_PATH)) {
+            if (!Files.exists(filePath)) {
                 return new ArrayList<>();
             }
 
             List<Task> tasks = new ArrayList<>();
-            List<String> lines = Files.readAllLines(FILE_PATH);
+            List<String> lines = Files.readAllLines(filePath);
             for (String line : lines) {
                 if (line.trim().isEmpty()) {
                     continue;
@@ -65,10 +77,13 @@ public class Storage {
      * @param tasks Tasks to write to disk.
      * @throws SerinaException If Serina is unable to create or write the save file.
      */
-    public static void saveTasks(List<Task> tasks) throws SerinaException {
+    public void saveTasks(List<Task> tasks) throws SerinaException {
         try {
-            Files.createDirectories(FILE_PATH.getParent());
-            Files.write(FILE_PATH, toFileLines(tasks));
+            Path parentDirectory = filePath.getParent();
+            if (parentDirectory != null) {
+                Files.createDirectories(parentDirectory);
+            }
+            Files.write(filePath, toFileLines(tasks));
         } catch (IOException | SecurityException e) {
             throw new SerinaException(SerinaError.SAVE_FAILED);
         }

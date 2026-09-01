@@ -1,0 +1,131 @@
+.root {
+    -fx-background-color: #f4f6f5;
+    -fx-font-family: "Arial";
+    -fx-font-size: 14px;
+}
+
+.app-header {
+    -fx-background-color: #ffffff;
+    -fx-border-color: transparent transparent #d8dfdc transparent;
+    -fx-border-width: 0 0 1px 0;
+    -fx-min-height: 58px;
+}
+
+.brand-label {
+    -fx-text-fill: #182421;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+}
+
+.chat-scroll > .viewport {
+    -fx-background-color: transparent;
+    -fx-background-image: url("../images/chat-background.png");
+    -fx-background-position: center center;
+    -fx-background-repeat: no-repeat;
+    -fx-background-size: cover;
+}
+
+.chat-scroll {
+    -fx-background-color: #f4f6f5;
+    -fx-border-width: 0;
+    -fx-padding: 0;
+}
+
+.dialog-container {
+    -fx-background-color: transparent;
+}
+
+.composer {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d8dfdc transparent transparent transparent;
+    -fx-border-width: 1px 0 0 0;
+    -fx-min-height: 66px;
+}
+
+.text-field {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #aebbb6;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-padding: 10px 12px;
+    -fx-pref-height: 42px;
+}
+
+.text-field:focused {
+    -fx-border-color: #147d74;
+    -fx-border-width: 2px;
+    -fx-padding: 9px 11px;
+}
+
+.send-button {
+    -fx-background-color: #147d74;
+    -fx-background-radius: 6px;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bold;
+    -fx-pref-height: 42px;
+    -fx-cursor: hand;
+}
+
+.send-button:hover {
+    -fx-background-color: #0f665f;
+}
+
+.send-button:pressed {
+    -fx-background-color: #0b514c;
+}
+
+.send-button:disabled {
+    -fx-background-color: #9faaa6;
+    -fx-opacity: 1;
+}
+
+.message-bubble {
+    -fx-border-width: 1px;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-line-spacing: 2px;
+}
+
+.user-bubble {
+    -fx-background-color: #147d74;
+    -fx-border-color: #147d74;
+    -fx-text-fill: #ffffff;
+}
+
+.serina-bubble {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #cbd5d1;
+    -fx-text-fill: #182421;
+}
+
+.avatar-placeholder {
+    -fx-background-color: #e5e8e7;
+    -fx-background-radius: 20px;
+    -fx-border-color: #b9c2bf;
+    -fx-border-radius: 20px;
+    -fx-border-width: 1px;
+}
+
+.user-avatar {
+    -fx-border-color: #147d74;
+}
+
+.serina-avatar {
+    -fx-border-color: #d96b54;
+}
+
+.scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-pref-width: 10px;
+}
+
+.scroll-bar:vertical .thumb {
+    -fx-background-color: #aebbb6;
+    -fx-background-radius: 5px;
+}
+
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-opacity: 0;
+    -fx-pref-height: 0;
+}
