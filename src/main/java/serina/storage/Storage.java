@@ -63,7 +63,11 @@ public class Storage {
                 if (tasks.size() >= MAX_TASKS) {
                     throw new SerinaException(SerinaError.LOAD_TOO_MANY_TASKS);
                 }
-                tasks.add(parseTask(line));
+                Task task = parseTask(line);
+                assert task != null : "Non-empty save-file lines should parse into tasks or throw.";
+
+                tasks.add(task);
+                assert tasks.size() <= MAX_TASKS : "Loaded task count should stay within the supported maximum.";
             }
             return tasks;
         } catch (IOException | SecurityException e) {
@@ -78,6 +82,8 @@ public class Storage {
      * @throws SerinaException If Serina is unable to create or write the save file.
      */
     public void saveTasks(List<Task> tasks) throws SerinaException {
+        assert tasks != null : "Storage should save task lists supplied by Serina.";
+
         try {
             Path parentDirectory = filePath.getParent();
             if (parentDirectory != null) {
@@ -96,10 +102,13 @@ public class Storage {
      * @return One serialized line for each task.
      */
     private static List<String> toFileLines(List<Task> tasks) {
+        assert !tasks.contains(null) : "Only real tasks should be serialized.";
+
         List<String> lines = new ArrayList<>();
         for (Task task : tasks) {
             lines.add(task.toFileString());
         }
+        assert lines.size() == tasks.size() : "Each task should become exactly one save-file line.";
         return lines;
     }
 
@@ -111,33 +120,45 @@ public class Storage {
      * @throws SerinaException If the line does not follow the expected format.
      */
     private static Task parseTask(String line) throws SerinaException {
+        assert line != null : "Save-file parsing should receive lines read from disk.";
+
         List<String> parts = splitFileLine(line);
         if (parts.size() < 3) {
             throw new SerinaException(SerinaError.LOAD_FAILED);
         }
+        assert parts.size() >= 3 : "Validated save lines should have type, status, and description fields.";
 
         TaskType type = TaskType.parseFileValue(parts.get(0));
         TaskStatus status = TaskStatus.parseFileValue(parts.get(1));
+        assert type != null : "Task type parsing should return a type or throw a SerinaException.";
+        assert status != null : "Task status parsing should return a status or throw a SerinaException.";
+
         String description = parts.get(2);
         if (description.isEmpty()) {
             throw new SerinaException(SerinaError.LOAD_FAILED);
         }
+        assert !description.isBlank() : "Loaded task descriptions should be validated before task construction.";
 
         switch (type) {
             case TODO:
                 if (parts.size() != 3) {
                     throw new SerinaException(SerinaError.LOAD_FAILED);
                 }
+                assert parts.size() == 3 : "Todo save records should contain only type, status, and description.";
                 return new Todo(description, status);
             case DEADLINE:
                 if (parts.size() != 4 || parts.get(3).isEmpty()) {
                     throw new SerinaException(SerinaError.LOAD_FAILED);
                 }
+                assert parts.size() == 4 && !parts.get(3).isBlank()
+                        : "Deadline save records should contain one non-empty date field.";
                 return new Deadline(description, DateParser.parseFileDate(parts.get(3)), status);
             case EVENT:
                 if (parts.size() != 5 || parts.get(3).isEmpty() || parts.get(4).isEmpty()) {
                     throw new SerinaException(SerinaError.LOAD_FAILED);
                 }
+                assert parts.size() == 5 && !parts.get(3).isBlank() && !parts.get(4).isBlank()
+                        : "Event save records should contain non-empty start and end date fields.";
                 return parseEvent(description, parts.get(3), parts.get(4), status);
             default:
                 throw new SerinaException(SerinaError.LOAD_FAILED);
@@ -162,6 +183,7 @@ public class Storage {
             throw new SerinaException(SerinaError.LOAD_FAILED);
         }
 
+        assert !endDate.isBefore(startDate) : "Loaded events should be chronological before task construction.";
         return new Event(description, startDate, endDate, status);
     }
 
@@ -189,6 +211,7 @@ public class Storage {
         }
 
         parts.add(currentPart.toString().trim());
+        assert !parts.isEmpty() : "Splitting a save-file line should always produce at least one field.";
         return parts;
     }
 

@@ -385,3 +385,40 @@ Files changed:
 - `src/main/java/serina/task/Todo.java`
 - `src/main/java/serina/ui/Ui.java`
 - `AI.md`
+
+## Level A-Assertions
+
+Instruction:
+
+Use the Java assert feature to document important assumptions that should hold at various points in the code.
+Justify each case.
+
+What Codex did:
+
+- Coding contribution: I added Java `assert` statements at internal boundaries where earlier command parsing,
+  save-file validation, or object construction should already have guaranteed a safe state. These assertions document
+  developer assumptions without replacing user-facing validation, because Java assertions can be disabled at runtime.
+- Added command-processing assertions in `Serina.java` to document that UI commands are non-null, command text is
+  trimmed before dispatch, parsed task fields are non-blank, date parsing returns a date or throws, task creation
+  returns a task or throws, and event dates are chronological before an `Event` is constructed.
+- Added task model assertions in `Task.java`, `Deadline.java`, and `Event.java` to document that constructed tasks
+  should have non-blank descriptions, parsed statuses, parsed dates, and valid event date ranges.
+- Added task-list assertions in `TaskList.java` to document that task collections contain real task objects, respect
+  the 100-task maximum, change size predictably after add/delete operations, and convert validated one-based task
+  numbers into valid zero-based indexes.
+- Added storage assertions in `Storage.java` to document that validated save-file lines parse into tasks, each task
+  serializes to exactly one line, save-file records have the expected field counts, and loaded event dates are not
+  reversed.
+- Added date-parser assertions in `DateParser.java` to document that parsing is called with date text and an error
+  value for mapping invalid input to the correct `SerinaException`.
+
+Files changed:
+
+- `src/main/java/serina/Serina.java`
+- `src/main/java/serina/parser/DateParser.java`
+- `src/main/java/serina/storage/Storage.java`
+- `src/main/java/serina/task/Deadline.java`
+- `src/main/java/serina/task/Event.java`
+- `src/main/java/serina/task/Task.java`
+- `src/main/java/serina/task/TaskList.java`
+- `AI.md`

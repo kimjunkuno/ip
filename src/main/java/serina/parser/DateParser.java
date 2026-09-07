@@ -70,6 +70,9 @@ public final class DateParser {
      * @throws SerinaException If {@code dateText} is not a valid ISO date.
      */
     private static LocalDate parseDate(String dateText, SerinaError error) throws SerinaException {
+        assert dateText != null : "Date text should be checked before date parsing.";
+        assert error != null : "Date parsing should map failures to a Serina error.";
+
         try {
             return LocalDate.parse(dateText, INPUT_FORMATTER);
         } catch (DateTimeParseException e) {
