@@ -471,3 +471,26 @@ Files changed:
 - `src/main/java/serina/task/Deadline.java`
 - `src/main/java/serina/task/Event.java`
 - `AI.md`
+
+## Code Quality Refactoring 3
+
+Instruction:
+
+Review the code against the CS2103 code quality guidelines and continue improving code quality using one
+stand-alone refactoring per commit.
+
+What Codex did:
+
+- Coding contribution: I replaced save-file parsing magic numbers and delimiter literals in `Storage.java` with
+  named constants that describe the save-file format.
+- Identified bare field indexes such as `0`, `1`, `3`, and `4`, plus expected field counts such as `3`, `4`, and
+  `5`, as the next highest-priority issue because they forced readers to remember the serialized task layout while
+  reading validation and reconstruction logic.
+- Added named constants for task field indexes, expected record sizes, the escape marker, and the field delimiter.
+- Kept the parsing behavior unchanged while making each validation branch describe the save-file structure more
+  directly.
+
+Files changed:
+
+- `src/main/java/serina/storage/Storage.java`
+- `AI.md`
