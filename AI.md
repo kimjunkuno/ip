@@ -561,3 +561,29 @@ Files changed:
 - `src/main/java/serina/task/TaskList.java`
 - `src/main/java/serina/storage/Storage.java`
 - `AI.md`
+
+## BCD-Extension: Flexible Multi-Term Search
+
+Instruction:
+
+Extend `find` so users can combine partial keywords while preserving the existing command, display, and storage
+behavior.
+
+What Codex did:
+
+- Updated `TaskList.find(...)` to split a trimmed query on whitespace and return a task only when every
+  case-insensitive keyword is a substring of its description.
+- Preserved single-keyword searches, one-character keywords, task-list ordering, subset numbering, empty-result
+  output, and description-only matching.
+- Kept search read-only, with no changes to storage, command syntax, JavaFX rendering, or dependencies.
+- Updated the help text, focused JUnit coverage, test plan, and user guide for multi-term search.
+
+Files changed:
+
+- `src/main/java/serina/task/TaskList.java`
+- `src/main/java/serina/ResponseFormatter.java`
+- `src/test/java/serina/task/TaskListTest.java`
+- `src/test/java/serina/SerinaTest.java`
+- `tests/test-plan.md`
+- `docs/README.md`
+- `AI.md`

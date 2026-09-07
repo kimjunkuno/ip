@@ -22,7 +22,7 @@ final class ResponseFormatter {
             "mark <number> - mark a task as done",
             "unmark <number> - mark a task as not done",
             "delete <number> - remove a task",
-            "find <keyword> - find tasks containing a keyword",
+            "find <keywords> - find tasks containing all keywords",
             "bye - exit Serina");
     private static final String GOODBYE = "Bye. Hope to see you again soon!";
 

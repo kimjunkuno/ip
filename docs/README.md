@@ -20,6 +20,24 @@ Example: `keyword (optional arguments)`
 expected output
 ```
 
+## Finding tasks
+
+Use `find <keywords>` to find tasks whose descriptions contain every keyword. Matching ignores letter case, each
+keyword may match part of a word, and keywords may appear in any order.
+
+Example: `find proj rep`
+
+Given a task named `Submit Project report`, the expected output is:
+
+```text
+Here are the matching tasks in your list:
+1.[T][ ] Submit Project report
+```
+
+Searches examine task descriptions only. Results remain in task-list order and are numbered from `1` within the
+matching results. When nothing matches, Serina displays only the matching-tasks heading. A `find` command without
+keywords is rejected.
+
 ## Feature ABC
 
 // Feature details

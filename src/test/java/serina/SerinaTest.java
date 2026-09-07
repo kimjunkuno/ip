@@ -47,8 +47,23 @@ public class SerinaTest {
                 "mark <number> - mark a task as done",
                 "unmark <number> - mark a task as not done",
                 "delete <number> - remove a task",
-                "find <keyword> - find tasks containing a keyword",
+                "find <keywords> - find tasks containing all keywords",
                 "bye - exit Serina"));
+        assertFalse(result.shouldExit());
+    }
+
+    @Test
+    public void executeCommand_findWithMultiplePartialKeywords_returnsTasksContainingEveryKeyword() {
+        Serina serina = createSerina();
+        serina.executeCommand("todo Submit Project report");
+        serina.executeCommand("todo Draft project slides");
+        serina.executeCommand("todo Repair printer");
+
+        CommandResult result = serina.executeCommand("find REP PROJ");
+
+        assertResponses(result, String.join("\n",
+                "Here are the matching tasks in your list:",
+                "1.[T][ ] Submit Project report"));
         assertFalse(result.shouldExit());
     }
 
