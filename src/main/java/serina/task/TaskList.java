@@ -29,7 +29,11 @@ public class TaskList {
      * @param tasks Initial tasks, typically loaded from storage.
      */
     public TaskList(List<Task> tasks) {
+        assert tasks != null : "TaskList should be created from a task collection.";
+
         this.tasks = new ArrayList<>(tasks);
+        assert this.tasks.size() <= MAX_TASKS : "Initial task lists should be capped before TaskList is created.";
+        assert !this.tasks.contains(null) : "TaskList should store only task objects.";
     }
 
     /**
@@ -52,7 +56,13 @@ public class TaskList {
             throw new SerinaException(SerinaError.MAX_TASKS);
         }
 
+        int taskCountBeforeAdd = tasks.size();
+        assert task != null : "Only successfully created tasks should be added.";
+        assert taskCountBeforeAdd < MAX_TASKS : "Maximum-size validation should reject full task lists.";
+
         tasks.add(task);
+        assert tasks.size() == taskCountBeforeAdd + 1 : "Adding one task should increase the task count by one.";
+        assert tasks.size() <= MAX_TASKS : "TaskList should never grow beyond its maximum size.";
     }
 
     /**
@@ -63,7 +73,10 @@ public class TaskList {
      * @throws SerinaException If the given text is not a valid stored task number.
      */
     public Task getTask(String taskNumberText) throws SerinaException {
-        return tasks.get(getTaskIndex(taskNumberText));
+        int taskIndex = getTaskIndex(taskNumberText);
+        Task task = tasks.get(taskIndex);
+        assert task != null : "A validated task number should refer to an existing task.";
+        return task;
     }
 
     /**
@@ -74,7 +87,11 @@ public class TaskList {
      * @throws SerinaException If the given text is not a valid stored task number.
      */
     public Task delete(String taskNumberText) throws SerinaException {
-        return tasks.remove(getTaskIndex(taskNumberText));
+        int taskCountBeforeDelete = tasks.size();
+        Task deletedTask = tasks.remove(getTaskIndex(taskNumberText));
+        assert deletedTask != null : "A validated task number should remove an existing task.";
+        assert tasks.size() == taskCountBeforeDelete - 1 : "Deleting one task should decrease the task count by one.";
+        return deletedTask;
     }
 
     /**
@@ -84,7 +101,11 @@ public class TaskList {
      * @return Matching tasks in their original list order.
      */
     public List<Task> find(String keyword) {
+        assert keyword != null : "Find should receive a keyword parsed from a command.";
+
         String normalizedKeyword = keyword.trim().toLowerCase(Locale.ROOT);
+        assert !normalizedKeyword.isEmpty() : "Find should be called only after empty keywords are rejected.";
+
         List<Task> matchingTasks = new ArrayList<>();
         for (Task task : tasks) {
             String normalizedDescription = task.getDescription().toLowerCase(Locale.ROOT);
@@ -127,7 +148,10 @@ public class TaskList {
                 throw new SerinaException(SerinaError.INVALID_TASK_NUMBER);
             }
 
-            return taskNumber - 1;
+            int taskIndex = taskNumber - 1;
+            assert taskIndex >= 0 && taskIndex < tasks.size()
+                    : "Validated task numbers should map to valid zero-based indexes.";
+            return taskIndex;
         } catch (NumberFormatException e) {
             throw new SerinaException(SerinaError.INVALID_TASK_NUMBER);
         }

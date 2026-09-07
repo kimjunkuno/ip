@@ -102,6 +102,8 @@ public class Serina {
      * @return Responses and exit behavior produced by the command.
      */
     public CommandResult executeCommand(String input) {
+        assert input != null : "Commands should come from the UI as non-null text.";
+
         String command = input.trim();
         if (command.equals("bye")) {
             return new CommandResult(true, ResponseFormatter.formatGoodbye());
@@ -122,6 +124,8 @@ public class Serina {
      * Executes a command that does not directly end the conversation.
      */
     private String processCommand(String input) throws SerinaException {
+        assert input.equals(input.trim()) : "Commands should be trimmed before they are dispatched.";
+
         if (input.equals("help")) {
             return ResponseFormatter.formatHelp();
         }
@@ -147,10 +151,12 @@ public class Serina {
         }
         if (input.equals("find") || input.startsWith("find ")) {
             String keyword = parseFindKeyword(input.substring("find".length()));
+            assert !keyword.isBlank() : "Find keywords should be validated before searching.";
             return ResponseFormatter.formatMatchingTasks(tasks.find(keyword));
         }
 
         Task task = createTask(input);
+        assert task != null : "Task creation should return a task or throw a SerinaException.";
         tasks.add(task);
         storage.saveTasks(tasks.asList());
         return ResponseFormatter.formatAddedTask(task, tasks.size());
@@ -186,6 +192,7 @@ public class Serina {
             throw new SerinaException(SerinaError.EMPTY_TODO);
         }
 
+        assert !description.isBlank() : "Todo descriptions should be validated before task construction.";
         return new Todo(description);
     }
 
@@ -198,6 +205,7 @@ public class Serina {
         if (byIndex == -1) {
             throw new SerinaException(SerinaError.INVALID_DEADLINE_FORMAT);
         }
+        assert byIndex >= 0 : "Deadline commands should be sliced only after /by is found.";
 
         String description = commandText.substring(0, byIndex).trim();
         String deadlineDateText = commandText.substring(byIndex + "/by".length()).trim();
@@ -209,6 +217,9 @@ public class Serina {
         }
 
         LocalDate deadlineDate = DateParser.parseInputDate(deadlineDateText);
+        assert !description.isBlank() : "Deadline descriptions should be validated before task construction.";
+        assert !deadlineDateText.isBlank() : "Deadline dates should be validated before date parsing.";
+        assert deadlineDate != null : "Date parsing should return a deadline date or throw a SerinaException.";
         return new Deadline(description, deadlineDate);
     }
 
@@ -222,6 +233,8 @@ public class Serina {
         if (fromIndex == -1 || toIndex == -1 || toIndex < fromIndex) {
             throw new SerinaException(SerinaError.INVALID_EVENT_FORMAT);
         }
+        assert fromIndex >= 0 && toIndex > fromIndex
+                : "Event commands should be sliced only after /from and /to are found in order.";
 
         String description = commandText.substring(0, fromIndex).trim();
         String startDateText = commandText.substring(fromIndex + "/from".length(), toIndex).trim();
@@ -238,10 +251,14 @@ public class Serina {
 
         LocalDate startDate = DateParser.parseInputDate(startDateText);
         LocalDate endDate = DateParser.parseInputDate(endDateText);
+        assert !description.isBlank() : "Event descriptions should be validated before task construction.";
+        assert !startDateText.isBlank() : "Event start dates should be validated before date parsing.";
+        assert !endDateText.isBlank() : "Event end dates should be validated before date parsing.";
         if (endDate.isBefore(startDate)) {
             throw new SerinaException(SerinaError.INVALID_EVENT_DATE_RANGE);
         }
 
+        assert !endDate.isBefore(startDate) : "Events should be chronological before task construction.";
         return new Event(description, startDate, endDate);
     }
 
@@ -258,6 +275,7 @@ public class Serina {
             throw new SerinaException(SerinaError.EMPTY_FIND_KEYWORD);
         }
 
+        assert !keyword.isBlank() : "Find keyword parsing should reject blank keywords.";
         return keyword;
     }
 }

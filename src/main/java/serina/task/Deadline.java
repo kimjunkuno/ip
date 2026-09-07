@@ -18,6 +18,8 @@ public class Deadline extends Task {
      */
     public Deadline(String description, LocalDate deadlineDate) {
         super(description);
+        assert deadlineDate != null : "Deadline dates should be parsed before deadline construction.";
+
         this.deadlineDate = deadlineDate;
     }
 
@@ -30,6 +32,8 @@ public class Deadline extends Task {
      */
     public Deadline(String description, LocalDate deadlineDate, TaskStatus status) {
         super(description, status);
+        assert deadlineDate != null : "Saved deadline dates should be parsed before deadline construction.";
+
         this.deadlineDate = deadlineDate;
     }
 
@@ -71,6 +75,7 @@ public class Deadline extends Task {
      */
     @Override
     public boolean isOccurringOn(LocalDate date) {
+        assert date != null : "Date searches should provide a date to compare against.";
         return deadlineDate.equals(date);
     }
 }
