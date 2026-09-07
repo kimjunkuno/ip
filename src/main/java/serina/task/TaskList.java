@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import serina.exception.SerinaError;
 import serina.exception.SerinaException;
@@ -106,14 +107,9 @@ public class TaskList {
         String normalizedKeyword = keyword.trim().toLowerCase(Locale.ROOT);
         assert !normalizedKeyword.isEmpty() : "Find should be called only after empty keywords are rejected.";
 
-        List<Task> matchingTasks = new ArrayList<>();
-        for (Task task : tasks) {
-            String normalizedDescription = task.getDescription().toLowerCase(Locale.ROOT);
-            if (normalizedDescription.contains(normalizedKeyword)) {
-                matchingTasks.add(task);
-            }
-        }
-        return matchingTasks;
+        return tasks.stream()
+                .filter(task -> task.getDescription().toLowerCase(Locale.ROOT).contains(normalizedKeyword))
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**

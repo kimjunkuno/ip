@@ -538,3 +538,26 @@ Files changed:
 
 - `src/main/java/serina/storage/Storage.java`
 - `AI.md`
+
+## Level A-Streams
+
+Instruction:
+
+Use the Streams feature of Java in the code, if applicable.
+
+What Codex did:
+
+- Coding contribution: I used Java streams for collection operations that naturally read as filtering or mapping
+  pipelines, while keeping ordinary loops where they still make control flow clearer.
+- Refactored `TaskList.find(...)` to stream over stored tasks, filter descriptions with the existing
+  case-insensitive keyword rule, and collect matches in their original order.
+- Refactored `Storage.toFileLines(...)` to map each task to its save-file string with a stream before writing the
+  lines to disk.
+- Kept save-file parsing and command-reading loops unchanged because they involve ordered validation, checked
+  exceptions, or user-interface control flow where a loop is easier to understand.
+
+Files changed:
+
+- `src/main/java/serina/task/TaskList.java`
+- `src/main/java/serina/storage/Storage.java`
+- `AI.md`
