@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import serina.exception.SerinaError;
 import serina.exception.SerinaException;
@@ -116,10 +117,9 @@ public class Storage {
     private static List<String> toFileLines(List<Task> tasks) {
         assert !tasks.contains(null) : "Only real tasks should be serialized.";
 
-        List<String> lines = new ArrayList<>();
-        for (Task task : tasks) {
-            lines.add(task.toFileString());
-        }
+        List<String> lines = tasks.stream()
+                .map(Task::toFileString)
+                .collect(Collectors.toCollection(ArrayList::new));
         assert lines.size() == tasks.size() : "Each task should become exactly one save-file line.";
         return lines;
     }
