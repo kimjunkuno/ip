@@ -494,3 +494,25 @@ Files changed:
 
 - `src/main/java/serina/storage/Storage.java`
 - `AI.md`
+
+## Code Quality Refactoring 4
+
+Instruction:
+
+Review the code against the CS2103 code quality guidelines and continue improving code quality using one
+stand-alone refactoring per commit.
+
+What Codex did:
+
+- Coding contribution: I refactored `processCommand(...)` in `Serina.java` so it focuses on deciding which command
+  was entered, while separate helper methods handle the details of marking, unmarking, deleting, finding, and adding
+  tasks.
+- Identified mixed abstraction levels in `processCommand(...)` as the next highest-priority issue because command
+  dispatch was interleaved with task mutation, persistence, and response formatting details.
+- Added command-specific helper methods to keep each operation small and named by its intent.
+- Kept command behavior, validation, save behavior, and user-facing responses unchanged.
+
+Files changed:
+
+- `src/main/java/serina/Serina.java`
+- `AI.md`

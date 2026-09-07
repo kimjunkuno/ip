@@ -148,28 +148,63 @@ public class Serina {
             return ResponseFormatter.formatTaskList(tasks.asList());
         }
         if (isCommand(input, COMMAND_MARK)) {
-            Task task = tasks.getTask(getCommandArguments(input, COMMAND_MARK));
-            task.markAsDone();
-            storage.saveTasks(tasks.asList());
-            return ResponseFormatter.formatMarkedTask(task);
+            return markTask(input);
         }
         if (isCommand(input, COMMAND_UNMARK)) {
-            Task task = tasks.getTask(getCommandArguments(input, COMMAND_UNMARK));
-            task.markAsNotDone();
-            storage.saveTasks(tasks.asList());
-            return ResponseFormatter.formatUnmarkedTask(task);
+            return unmarkTask(input);
         }
         if (isCommand(input, COMMAND_DELETE)) {
-            Task task = tasks.delete(getCommandArguments(input, COMMAND_DELETE));
-            storage.saveTasks(tasks.asList());
-            return ResponseFormatter.formatDeletedTask(task, tasks.size());
+            return deleteTask(input);
         }
         if (isCommand(input, COMMAND_FIND)) {
-            String keyword = parseFindKeyword(getCommandArguments(input, COMMAND_FIND));
-            assert !keyword.isBlank() : "Find keywords should be validated before searching.";
-            return ResponseFormatter.formatMatchingTasks(tasks.find(keyword));
+            return findTasks(input);
         }
 
+        return addTask(input);
+    }
+
+    /**
+     * Marks a selected task as done and saves the updated task list.
+     */
+    private String markTask(String input) throws SerinaException {
+        Task task = tasks.getTask(getCommandArguments(input, COMMAND_MARK));
+        task.markAsDone();
+        storage.saveTasks(tasks.asList());
+        return ResponseFormatter.formatMarkedTask(task);
+    }
+
+    /**
+     * Marks a selected task as not done and saves the updated task list.
+     */
+    private String unmarkTask(String input) throws SerinaException {
+        Task task = tasks.getTask(getCommandArguments(input, COMMAND_UNMARK));
+        task.markAsNotDone();
+        storage.saveTasks(tasks.asList());
+        return ResponseFormatter.formatUnmarkedTask(task);
+    }
+
+    /**
+     * Deletes a selected task and saves the updated task list.
+     */
+    private String deleteTask(String input) throws SerinaException {
+        Task task = tasks.delete(getCommandArguments(input, COMMAND_DELETE));
+        storage.saveTasks(tasks.asList());
+        return ResponseFormatter.formatDeletedTask(task, tasks.size());
+    }
+
+    /**
+     * Finds tasks whose descriptions contain the parsed keyword.
+     */
+    private String findTasks(String input) throws SerinaException {
+        String keyword = parseFindKeyword(getCommandArguments(input, COMMAND_FIND));
+        assert !keyword.isBlank() : "Find keywords should be validated before searching.";
+        return ResponseFormatter.formatMatchingTasks(tasks.find(keyword));
+    }
+
+    /**
+     * Creates a new task and saves the updated task list.
+     */
+    private String addTask(String input) throws SerinaException {
         Task task = createTask(input);
         assert task != null : "Task creation should return a task or throw a SerinaException.";
         tasks.add(task);
