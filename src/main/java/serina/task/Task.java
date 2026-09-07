@@ -15,11 +15,7 @@ public abstract class Task {
      * @param description Text describing the task.
      */
     public Task(String description) {
-        assert description != null : "Task descriptions should be validated before task construction.";
-        assert !description.isBlank() : "Task descriptions should not be blank after validation.";
-
-        this.description = description;
-        this.status = TaskStatus.NOT_DONE;
+        this(description, TaskStatus.NOT_DONE);
     }
 
     /**

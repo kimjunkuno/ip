@@ -17,10 +17,7 @@ public class Deadline extends Task {
      * @param deadlineDate Deadline for the task.
      */
     public Deadline(String description, LocalDate deadlineDate) {
-        super(description);
-        assert deadlineDate != null : "Deadline dates should be parsed before deadline construction.";
-
-        this.deadlineDate = deadlineDate;
+        this(description, deadlineDate, TaskStatus.NOT_DONE);
     }
 
     /**
@@ -32,7 +29,7 @@ public class Deadline extends Task {
      */
     public Deadline(String description, LocalDate deadlineDate, TaskStatus status) {
         super(description, status);
-        assert deadlineDate != null : "Saved deadline dates should be parsed before deadline construction.";
+        assert deadlineDate != null : "Deadline dates should be parsed before deadline construction.";
 
         this.deadlineDate = deadlineDate;
     }

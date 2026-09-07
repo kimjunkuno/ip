@@ -446,3 +446,28 @@ Files changed:
 
 - `src/main/java/serina/Serina.java`
 - `AI.md`
+
+## Code Quality Refactoring 2
+
+Instruction:
+
+Review the code against the CS2103 code quality guidelines and continue improving code quality using one
+stand-alone refactoring per commit.
+
+What Codex did:
+
+- Coding contribution: I refactored the task constructors to use constructor chaining so shared initialization and
+  assertions live in one constructor path per class.
+- Identified duplicated constructor initialization in `Task`, `Todo`, `Deadline`, and `Event` as the next
+  highest-priority code quality issue because the same default status setup and date invariant checks appeared in
+  parallel constructors.
+- Changed no-status constructors to delegate to the full constructor with `TaskStatus.NOT_DONE`.
+- Kept the public constructor APIs unchanged so existing callers and tests continue to work.
+
+Files changed:
+
+- `src/main/java/serina/task/Task.java`
+- `src/main/java/serina/task/Todo.java`
+- `src/main/java/serina/task/Deadline.java`
+- `src/main/java/serina/task/Event.java`
+- `AI.md`
