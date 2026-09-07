@@ -422,3 +422,27 @@ Files changed:
 - `src/main/java/serina/task/Task.java`
 - `src/main/java/serina/task/TaskList.java`
 - `AI.md`
+
+## Code Quality Refactoring 1
+
+Instruction:
+
+Review the code against the CS2103 code quality guidelines, identify the single highest-priority issue, and fix it
+as one stand-alone refactoring.
+
+What Codex did:
+
+- Coding contribution: I refactored command parsing in `Serina.java` to replace repeated raw command words and
+  argument separators with named constants and small helper methods. This makes the parser easier to read and safer
+  to change because command matching and argument extraction now depend on one source of truth.
+- Identified repeated literals such as `mark`, `unmark`, `todo`, `/by`, `/from`, and `/to` as the highest-priority
+  code quality issue because they made the parser mix command intent with low-level string-slicing details.
+- Added `isCommand(...)` to centralize the rule that a command can appear alone or followed by a space and arguments.
+- Added `getCommandArguments(...)` to centralize argument extraction instead of repeating `substring(...)` with
+  command-word lengths throughout the parser.
+- Kept the refactoring behavior-preserving; validation and user-facing responses remain unchanged.
+
+Files changed:
+
+- `src/main/java/serina/Serina.java`
+- `AI.md`

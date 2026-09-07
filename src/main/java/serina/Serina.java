@@ -18,6 +18,21 @@ import serina.ui.Ui;
  * Processes Serina commands for console and graphical user interfaces.
  */
 public class Serina {
+    private static final String COMMAND_ARGUMENT_SEPARATOR = " ";
+    private static final String COMMAND_BYE = "bye";
+    private static final String COMMAND_HELP = "help";
+    private static final String COMMAND_LIST = "list";
+    private static final String COMMAND_MARK = "mark";
+    private static final String COMMAND_UNMARK = "unmark";
+    private static final String COMMAND_DELETE = "delete";
+    private static final String COMMAND_FIND = "find";
+    private static final String COMMAND_TODO = "todo";
+    private static final String COMMAND_DEADLINE = "deadline";
+    private static final String COMMAND_EVENT = "event";
+    private static final String DEADLINE_DATE_SEPARATOR = "/by";
+    private static final String EVENT_START_SEPARATOR = "/from";
+    private static final String EVENT_END_SEPARATOR = "/to";
+
     private final Storage storage;
     private final TaskList tasks;
     private final List<String> startupMessages;
@@ -105,7 +120,7 @@ public class Serina {
         assert input != null : "Commands should come from the UI as non-null text.";
 
         String command = input.trim();
-        if (command.equals("bye")) {
+        if (command.equals(COMMAND_BYE)) {
             return new CommandResult(true, ResponseFormatter.formatGoodbye());
         }
 
@@ -126,31 +141,31 @@ public class Serina {
     private String processCommand(String input) throws SerinaException {
         assert input.equals(input.trim()) : "Commands should be trimmed before they are dispatched.";
 
-        if (input.equals("help")) {
+        if (input.equals(COMMAND_HELP)) {
             return ResponseFormatter.formatHelp();
         }
-        if (input.equals("list")) {
+        if (input.equals(COMMAND_LIST)) {
             return ResponseFormatter.formatTaskList(tasks.asList());
         }
-        if (input.equals("mark") || input.startsWith("mark ")) {
-            Task task = tasks.getTask(input.substring("mark".length()));
+        if (isCommand(input, COMMAND_MARK)) {
+            Task task = tasks.getTask(getCommandArguments(input, COMMAND_MARK));
             task.markAsDone();
             storage.saveTasks(tasks.asList());
             return ResponseFormatter.formatMarkedTask(task);
         }
-        if (input.equals("unmark") || input.startsWith("unmark ")) {
-            Task task = tasks.getTask(input.substring("unmark".length()));
+        if (isCommand(input, COMMAND_UNMARK)) {
+            Task task = tasks.getTask(getCommandArguments(input, COMMAND_UNMARK));
             task.markAsNotDone();
             storage.saveTasks(tasks.asList());
             return ResponseFormatter.formatUnmarkedTask(task);
         }
-        if (input.equals("delete") || input.startsWith("delete ")) {
-            Task task = tasks.delete(input.substring("delete".length()));
+        if (isCommand(input, COMMAND_DELETE)) {
+            Task task = tasks.delete(getCommandArguments(input, COMMAND_DELETE));
             storage.saveTasks(tasks.asList());
             return ResponseFormatter.formatDeletedTask(task, tasks.size());
         }
-        if (input.equals("find") || input.startsWith("find ")) {
-            String keyword = parseFindKeyword(input.substring("find".length()));
+        if (isCommand(input, COMMAND_FIND)) {
+            String keyword = parseFindKeyword(getCommandArguments(input, COMMAND_FIND));
             assert !keyword.isBlank() : "Find keywords should be validated before searching.";
             return ResponseFormatter.formatMatchingTasks(tasks.find(keyword));
         }
@@ -168,16 +183,16 @@ public class Serina {
      * @throws SerinaException If the command is unknown or missing required fields.
      */
     private static Task createTask(String input) throws SerinaException {
-        if (input.equals("todo") || input.startsWith("todo ")) {
-            return createTodo(input.substring("todo".length()));
+        if (isCommand(input, COMMAND_TODO)) {
+            return createTodo(getCommandArguments(input, COMMAND_TODO));
         }
 
-        if (input.equals("deadline") || input.startsWith("deadline ")) {
-            return createDeadline(input.substring("deadline".length()));
+        if (isCommand(input, COMMAND_DEADLINE)) {
+            return createDeadline(getCommandArguments(input, COMMAND_DEADLINE));
         }
 
-        if (input.equals("event") || input.startsWith("event ")) {
-            return createEvent(input.substring("event".length()));
+        if (isCommand(input, COMMAND_EVENT)) {
+            return createEvent(getCommandArguments(input, COMMAND_EVENT));
         }
 
         throw new SerinaException(SerinaError.UNKNOWN_COMMAND);
@@ -201,14 +216,14 @@ public class Serina {
      */
     private static Deadline createDeadline(String input) throws SerinaException {
         String commandText = input.trim();
-        int byIndex = commandText.indexOf("/by");
+        int byIndex = commandText.indexOf(DEADLINE_DATE_SEPARATOR);
         if (byIndex == -1) {
             throw new SerinaException(SerinaError.INVALID_DEADLINE_FORMAT);
         }
         assert byIndex >= 0 : "Deadline commands should be sliced only after /by is found.";
 
         String description = commandText.substring(0, byIndex).trim();
-        String deadlineDateText = commandText.substring(byIndex + "/by".length()).trim();
+        String deadlineDateText = commandText.substring(byIndex + DEADLINE_DATE_SEPARATOR.length()).trim();
         if (description.isEmpty()) {
             throw new SerinaException(SerinaError.EMPTY_DEADLINE_DESCRIPTION);
         }
@@ -228,8 +243,8 @@ public class Serina {
      */
     private static Event createEvent(String input) throws SerinaException {
         String commandText = input.trim();
-        int fromIndex = commandText.indexOf("/from");
-        int toIndex = commandText.indexOf("/to");
+        int fromIndex = commandText.indexOf(EVENT_START_SEPARATOR);
+        int toIndex = commandText.indexOf(EVENT_END_SEPARATOR);
         if (fromIndex == -1 || toIndex == -1 || toIndex < fromIndex) {
             throw new SerinaException(SerinaError.INVALID_EVENT_FORMAT);
         }
@@ -237,8 +252,8 @@ public class Serina {
                 : "Event commands should be sliced only after /from and /to are found in order.";
 
         String description = commandText.substring(0, fromIndex).trim();
-        String startDateText = commandText.substring(fromIndex + "/from".length(), toIndex).trim();
-        String endDateText = commandText.substring(toIndex + "/to".length()).trim();
+        String startDateText = commandText.substring(fromIndex + EVENT_START_SEPARATOR.length(), toIndex).trim();
+        String endDateText = commandText.substring(toIndex + EVENT_END_SEPARATOR.length()).trim();
         if (description.isEmpty()) {
             throw new SerinaException(SerinaError.EMPTY_EVENT_DESCRIPTION);
         }
@@ -277,5 +292,21 @@ public class Serina {
 
         assert !keyword.isBlank() : "Find keyword parsing should reject blank keywords.";
         return keyword;
+    }
+
+    /**
+     * Returns whether the input is exactly the command word or starts with that command followed by arguments.
+     */
+    private static boolean isCommand(String input, String commandWord) {
+        return input.equals(commandWord) || input.startsWith(commandWord + COMMAND_ARGUMENT_SEPARATOR);
+    }
+
+    /**
+     * Returns the text after the command word.
+     */
+    private static String getCommandArguments(String input, String commandWord) {
+        assert isCommand(input, commandWord) : "Command arguments should be extracted only from matching commands.";
+
+        return input.substring(commandWord.length());
     }
 }
