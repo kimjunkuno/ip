@@ -19,13 +19,7 @@ public class Event extends Task {
      * @param endDate End date or time.
      */
     public Event(String description, LocalDate startDate, LocalDate endDate) {
-        super(description);
-        assert startDate != null : "Event start dates should be parsed before event construction.";
-        assert endDate != null : "Event end dates should be parsed before event construction.";
-        assert !endDate.isBefore(startDate) : "Event end dates should not be before start dates.";
-
-        this.startDate = startDate;
-        this.endDate = endDate;
+        this(description, startDate, endDate, TaskStatus.NOT_DONE);
     }
 
     /**
@@ -38,9 +32,9 @@ public class Event extends Task {
      */
     public Event(String description, LocalDate startDate, LocalDate endDate, TaskStatus status) {
         super(description, status);
-        assert startDate != null : "Saved event start dates should be parsed before event construction.";
-        assert endDate != null : "Saved event end dates should be parsed before event construction.";
-        assert !endDate.isBefore(startDate) : "Saved event end dates should not be before start dates.";
+        assert startDate != null : "Event start dates should be parsed before event construction.";
+        assert endDate != null : "Event end dates should be parsed before event construction.";
+        assert !endDate.isBefore(startDate) : "Event end dates should not be before start dates.";
 
         this.startDate = startDate;
         this.endDate = endDate;

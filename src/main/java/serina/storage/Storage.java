@@ -23,6 +23,18 @@ import serina.task.Todo;
 public class Storage {
     private static final Path DEFAULT_FILE_PATH = Path.of("data", "serina.txt");
     private static final int MAX_TASKS = 100;
+    private static final int MIN_TASK_FIELD_COUNT = 3;
+    private static final int TODO_FIELD_COUNT = 3;
+    private static final int DEADLINE_FIELD_COUNT = 4;
+    private static final int EVENT_FIELD_COUNT = 5;
+    private static final int TASK_TYPE_FIELD_INDEX = 0;
+    private static final int TASK_STATUS_FIELD_INDEX = 1;
+    private static final int TASK_DESCRIPTION_FIELD_INDEX = 2;
+    private static final int DEADLINE_DATE_FIELD_INDEX = 3;
+    private static final int EVENT_START_DATE_FIELD_INDEX = 3;
+    private static final int EVENT_END_DATE_FIELD_INDEX = 4;
+    private static final char FILE_ESCAPE_MARKER = '\\';
+    private static final char FILE_FIELD_DELIMITER = '|';
 
     private final Path filePath;
 
@@ -123,17 +135,18 @@ public class Storage {
         assert line != null : "Save-file parsing should receive lines read from disk.";
 
         List<String> parts = splitFileLine(line);
-        if (parts.size() < 3) {
+        if (parts.size() < MIN_TASK_FIELD_COUNT) {
             throw new SerinaException(SerinaError.LOAD_FAILED);
         }
-        assert parts.size() >= 3 : "Validated save lines should have type, status, and description fields.";
+        assert parts.size() >= MIN_TASK_FIELD_COUNT
+                : "Validated save lines should have type, status, and description fields.";
 
-        TaskType type = TaskType.parseFileValue(parts.get(0));
-        TaskStatus status = TaskStatus.parseFileValue(parts.get(1));
+        TaskType type = TaskType.parseFileValue(parts.get(TASK_TYPE_FIELD_INDEX));
+        TaskStatus status = TaskStatus.parseFileValue(parts.get(TASK_STATUS_FIELD_INDEX));
         assert type != null : "Task type parsing should return a type or throw a SerinaException.";
         assert status != null : "Task status parsing should return a status or throw a SerinaException.";
 
-        String description = parts.get(2);
+        String description = parts.get(TASK_DESCRIPTION_FIELD_INDEX);
         if (description.isEmpty()) {
             throw new SerinaException(SerinaError.LOAD_FAILED);
         }
@@ -141,28 +154,52 @@ public class Storage {
 
         switch (type) {
             case TODO:
-                if (parts.size() != 3) {
-                    throw new SerinaException(SerinaError.LOAD_FAILED);
-                }
-                assert parts.size() == 3 : "Todo save records should contain only type, status, and description.";
+                validateFieldCount(parts, TODO_FIELD_COUNT);
                 return new Todo(description, status);
             case DEADLINE:
-                if (parts.size() != 4 || parts.get(3).isEmpty()) {
-                    throw new SerinaException(SerinaError.LOAD_FAILED);
-                }
-                assert parts.size() == 4 && !parts.get(3).isBlank()
-                        : "Deadline save records should contain one non-empty date field.";
-                return new Deadline(description, DateParser.parseFileDate(parts.get(3)), status);
+                validateFieldCount(parts, DEADLINE_FIELD_COUNT);
+                validateNonEmptyField(parts, DEADLINE_DATE_FIELD_INDEX);
+                return new Deadline(description, DateParser.parseFileDate(parts.get(DEADLINE_DATE_FIELD_INDEX)),
+                        status);
             case EVENT:
-                if (parts.size() != 5 || parts.get(3).isEmpty() || parts.get(4).isEmpty()) {
-                    throw new SerinaException(SerinaError.LOAD_FAILED);
-                }
-                assert parts.size() == 5 && !parts.get(3).isBlank() && !parts.get(4).isBlank()
-                        : "Event save records should contain non-empty start and end date fields.";
-                return parseEvent(description, parts.get(3), parts.get(4), status);
+                validateFieldCount(parts, EVENT_FIELD_COUNT);
+                validateNonEmptyField(parts, EVENT_START_DATE_FIELD_INDEX);
+                validateNonEmptyField(parts, EVENT_END_DATE_FIELD_INDEX);
+                return parseEvent(description, parts.get(EVENT_START_DATE_FIELD_INDEX),
+                        parts.get(EVENT_END_DATE_FIELD_INDEX), status);
             default:
                 throw new SerinaException(SerinaError.LOAD_FAILED);
         }
+    }
+
+    /**
+     * Checks that a save-file record has the expected number of fields.
+     *
+     * @param parts Decoded save-file fields.
+     * @param expectedFieldCount Number of fields expected for the task type.
+     * @throws SerinaException If the record has a different number of fields.
+     */
+    private static void validateFieldCount(List<String> parts, int expectedFieldCount) throws SerinaException {
+        if (parts.size() != expectedFieldCount) {
+            throw new SerinaException(SerinaError.LOAD_FAILED);
+        }
+
+        assert parts.size() == expectedFieldCount : "Save-file records should have the expected field count.";
+    }
+
+    /**
+     * Checks that a required save-file field is present and not empty.
+     *
+     * @param parts Decoded save-file fields.
+     * @param fieldIndex Index of the required field.
+     * @throws SerinaException If the required field is empty.
+     */
+    private static void validateNonEmptyField(List<String> parts, int fieldIndex) throws SerinaException {
+        if (parts.get(fieldIndex).isEmpty()) {
+            throw new SerinaException(SerinaError.LOAD_FAILED);
+        }
+
+        assert !parts.get(fieldIndex).isBlank() : "Required save-file fields should not be blank.";
     }
 
     /**
@@ -199,10 +236,12 @@ public class Storage {
 
         for (int i = 0; i < line.length(); i++) {
             char current = line.charAt(i);
-            if (current == '\\' && i + 1 < line.length() && isEscapedCharacter(line.charAt(i + 1))) {
+            if (current == FILE_ESCAPE_MARKER
+                    && i + 1 < line.length()
+                    && isEscapedCharacter(line.charAt(i + 1))) {
                 currentPart.append(line.charAt(i + 1));
                 i++;
-            } else if (current == '|') {
+            } else if (current == FILE_FIELD_DELIMITER) {
                 parts.add(currentPart.toString().trim());
                 currentPart.setLength(0);
             } else {
@@ -222,6 +261,6 @@ public class Storage {
      * @return {@code true} for a backslash or field delimiter.
      */
     private static boolean isEscapedCharacter(char character) {
-        return character == '\\' || character == '|';
+        return character == FILE_ESCAPE_MARKER || character == FILE_FIELD_DELIMITER;
     }
 }

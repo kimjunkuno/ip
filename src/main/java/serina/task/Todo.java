@@ -10,7 +10,7 @@ public class Todo extends Task {
      * @param description Text describing the task.
      */
     public Todo(String description) {
-        super(description);
+        this(description, TaskStatus.NOT_DONE);
     }
 
     /**

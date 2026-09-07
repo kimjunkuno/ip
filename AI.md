@@ -422,3 +422,119 @@ Files changed:
 - `src/main/java/serina/task/Task.java`
 - `src/main/java/serina/task/TaskList.java`
 - `AI.md`
+
+## Code Quality Refactoring 1
+
+Instruction:
+
+Review the code against the CS2103 code quality guidelines, identify the single highest-priority issue, and fix it
+as one stand-alone refactoring.
+
+What Codex did:
+
+- Coding contribution: I refactored command parsing in `Serina.java` to replace repeated raw command words and
+  argument separators with named constants and small helper methods. This makes the parser easier to read and safer
+  to change because command matching and argument extraction now depend on one source of truth.
+- Identified repeated literals such as `mark`, `unmark`, `todo`, `/by`, `/from`, and `/to` as the highest-priority
+  code quality issue because they made the parser mix command intent with low-level string-slicing details.
+- Added `isCommand(...)` to centralize the rule that a command can appear alone or followed by a space and arguments.
+- Added `getCommandArguments(...)` to centralize argument extraction instead of repeating `substring(...)` with
+  command-word lengths throughout the parser.
+- Kept the refactoring behavior-preserving; validation and user-facing responses remain unchanged.
+
+Files changed:
+
+- `src/main/java/serina/Serina.java`
+- `AI.md`
+
+## Code Quality Refactoring 2
+
+Instruction:
+
+Review the code against the CS2103 code quality guidelines and continue improving code quality using one
+stand-alone refactoring per commit.
+
+What Codex did:
+
+- Coding contribution: I refactored the task constructors to use constructor chaining so shared initialization and
+  assertions live in one constructor path per class.
+- Identified duplicated constructor initialization in `Task`, `Todo`, `Deadline`, and `Event` as the next
+  highest-priority code quality issue because the same default status setup and date invariant checks appeared in
+  parallel constructors.
+- Changed no-status constructors to delegate to the full constructor with `TaskStatus.NOT_DONE`.
+- Kept the public constructor APIs unchanged so existing callers and tests continue to work.
+
+Files changed:
+
+- `src/main/java/serina/task/Task.java`
+- `src/main/java/serina/task/Todo.java`
+- `src/main/java/serina/task/Deadline.java`
+- `src/main/java/serina/task/Event.java`
+- `AI.md`
+
+## Code Quality Refactoring 3
+
+Instruction:
+
+Review the code against the CS2103 code quality guidelines and continue improving code quality using one
+stand-alone refactoring per commit.
+
+What Codex did:
+
+- Coding contribution: I replaced save-file parsing magic numbers and delimiter literals in `Storage.java` with
+  named constants that describe the save-file format.
+- Identified bare field indexes such as `0`, `1`, `3`, and `4`, plus expected field counts such as `3`, `4`, and
+  `5`, as the next highest-priority issue because they forced readers to remember the serialized task layout while
+  reading validation and reconstruction logic.
+- Added named constants for task field indexes, expected record sizes, the escape marker, and the field delimiter.
+- Kept the parsing behavior unchanged while making each validation branch describe the save-file structure more
+  directly.
+
+Files changed:
+
+- `src/main/java/serina/storage/Storage.java`
+- `AI.md`
+
+## Code Quality Refactoring 4
+
+Instruction:
+
+Review the code against the CS2103 code quality guidelines and continue improving code quality using one
+stand-alone refactoring per commit.
+
+What Codex did:
+
+- Coding contribution: I refactored `processCommand(...)` in `Serina.java` so it focuses on deciding which command
+  was entered, while separate helper methods handle the details of marking, unmarking, deleting, finding, and adding
+  tasks.
+- Identified mixed abstraction levels in `processCommand(...)` as the next highest-priority issue because command
+  dispatch was interleaved with task mutation, persistence, and response formatting details.
+- Added command-specific helper methods to keep each operation small and named by its intent.
+- Kept command behavior, validation, save behavior, and user-facing responses unchanged.
+
+Files changed:
+
+- `src/main/java/serina/Serina.java`
+- `AI.md`
+
+## Code Quality Refactoring 5
+
+Instruction:
+
+Review the code against the CS2103 code quality guidelines and continue improving code quality using one
+stand-alone refactoring per commit.
+
+What Codex did:
+
+- Coding contribution: I extracted save-file validation helpers in `Storage.java` so task reconstruction reads as
+  validation followed by construction, without repeating compound error checks in every switch branch.
+- Identified repeated field-count and empty-field checks in `parseTask(...)` as the next highest-priority issue
+  because they obscured the happy path and mixed validation mechanics with task reconstruction.
+- Added `validateFieldCount(...)` to centralize record-size validation.
+- Added `validateNonEmptyField(...)` to centralize required-field validation for deadline and event date fields.
+- Kept malformed save-file behavior unchanged; invalid records still map to the same load error.
+
+Files changed:
+
+- `src/main/java/serina/storage/Storage.java`
+- `AI.md`
