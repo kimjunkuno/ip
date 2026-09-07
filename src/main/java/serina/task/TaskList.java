@@ -96,19 +96,23 @@ public class TaskList {
     }
 
     /**
-     * Returns tasks whose descriptions contain the given keyword, ignoring case.
+     * Returns tasks whose descriptions contain every keyword in the query, ignoring case.
      *
-     * @param keyword Keyword to match against task descriptions.
+     * @param query Whitespace-delimited keywords to match against task descriptions.
      * @return Matching tasks in their original list order.
      */
-    public List<Task> find(String keyword) {
-        assert keyword != null : "Find should receive a keyword parsed from a command.";
+    public List<Task> find(String query) {
+        assert query != null : "Find should receive a query parsed from a command.";
 
-        String normalizedKeyword = keyword.trim().toLowerCase(Locale.ROOT);
-        assert !normalizedKeyword.isEmpty() : "Find should be called only after empty keywords are rejected.";
+        String normalizedQuery = query.trim().toLowerCase(Locale.ROOT);
+        assert !normalizedQuery.isEmpty() : "Find should be called only after empty queries are rejected.";
 
+        List<String> normalizedKeywords = List.of(normalizedQuery.split("\\s+"));
         return tasks.stream()
-                .filter(task -> task.getDescription().toLowerCase(Locale.ROOT).contains(normalizedKeyword))
+                .filter(task -> {
+                    String normalizedDescription = task.getDescription().toLowerCase(Locale.ROOT);
+                    return normalizedKeywords.stream().allMatch(normalizedDescription::contains);
+                })
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 

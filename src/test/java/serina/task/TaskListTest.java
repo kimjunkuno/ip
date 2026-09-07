@@ -34,6 +34,21 @@ public class TaskListTest {
     }
 
     @Test
+    public void find_multiplePartialKeywordsInAnyOrder_returnsTasksContainingEveryKeyword() {
+        assertEquals(List.of(bookClubMeeting), tasks.find("  MEET\tboo  "));
+    }
+
+    @Test
+    public void find_keywordsSplitAcrossDifferentTasks_returnsNoMatches() {
+        assertEquals(List.of(), tasks.find("book bread"));
+    }
+
+    @Test
+    public void find_oneCharacterKeyword_returnsSubstringMatches() {
+        assertEquals(List.of(readBook, returnBook, bookClubMeeting, buyBread), tasks.find("b"));
+    }
+
+    @Test
     public void find_keywordWithSurroundingWhitespace_returnsTrimmedKeywordMatches() {
         assertEquals(List.of(buyBread), tasks.find("  bread  "));
     }
