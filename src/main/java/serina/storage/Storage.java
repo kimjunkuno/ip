@@ -154,35 +154,52 @@ public class Storage {
 
         switch (type) {
             case TODO:
-                if (parts.size() != TODO_FIELD_COUNT) {
-                    throw new SerinaException(SerinaError.LOAD_FAILED);
-                }
-                assert parts.size() == TODO_FIELD_COUNT
-                        : "Todo save records should contain only type, status, and description.";
+                validateFieldCount(parts, TODO_FIELD_COUNT);
                 return new Todo(description, status);
             case DEADLINE:
-                if (parts.size() != DEADLINE_FIELD_COUNT || parts.get(DEADLINE_DATE_FIELD_INDEX).isEmpty()) {
-                    throw new SerinaException(SerinaError.LOAD_FAILED);
-                }
-                assert parts.size() == DEADLINE_FIELD_COUNT && !parts.get(DEADLINE_DATE_FIELD_INDEX).isBlank()
-                        : "Deadline save records should contain one non-empty date field.";
+                validateFieldCount(parts, DEADLINE_FIELD_COUNT);
+                validateNonEmptyField(parts, DEADLINE_DATE_FIELD_INDEX);
                 return new Deadline(description, DateParser.parseFileDate(parts.get(DEADLINE_DATE_FIELD_INDEX)),
                         status);
             case EVENT:
-                if (parts.size() != EVENT_FIELD_COUNT
-                        || parts.get(EVENT_START_DATE_FIELD_INDEX).isEmpty()
-                        || parts.get(EVENT_END_DATE_FIELD_INDEX).isEmpty()) {
-                    throw new SerinaException(SerinaError.LOAD_FAILED);
-                }
-                assert parts.size() == EVENT_FIELD_COUNT
-                        && !parts.get(EVENT_START_DATE_FIELD_INDEX).isBlank()
-                        && !parts.get(EVENT_END_DATE_FIELD_INDEX).isBlank()
-                        : "Event save records should contain non-empty start and end date fields.";
+                validateFieldCount(parts, EVENT_FIELD_COUNT);
+                validateNonEmptyField(parts, EVENT_START_DATE_FIELD_INDEX);
+                validateNonEmptyField(parts, EVENT_END_DATE_FIELD_INDEX);
                 return parseEvent(description, parts.get(EVENT_START_DATE_FIELD_INDEX),
                         parts.get(EVENT_END_DATE_FIELD_INDEX), status);
             default:
                 throw new SerinaException(SerinaError.LOAD_FAILED);
         }
+    }
+
+    /**
+     * Checks that a save-file record has the expected number of fields.
+     *
+     * @param parts Decoded save-file fields.
+     * @param expectedFieldCount Number of fields expected for the task type.
+     * @throws SerinaException If the record has a different number of fields.
+     */
+    private static void validateFieldCount(List<String> parts, int expectedFieldCount) throws SerinaException {
+        if (parts.size() != expectedFieldCount) {
+            throw new SerinaException(SerinaError.LOAD_FAILED);
+        }
+
+        assert parts.size() == expectedFieldCount : "Save-file records should have the expected field count.";
+    }
+
+    /**
+     * Checks that a required save-file field is present and not empty.
+     *
+     * @param parts Decoded save-file fields.
+     * @param fieldIndex Index of the required field.
+     * @throws SerinaException If the required field is empty.
+     */
+    private static void validateNonEmptyField(List<String> parts, int fieldIndex) throws SerinaException {
+        if (parts.get(fieldIndex).isEmpty()) {
+            throw new SerinaException(SerinaError.LOAD_FAILED);
+        }
+
+        assert !parts.get(fieldIndex).isBlank() : "Required save-file fields should not be blank.";
     }
 
     /**

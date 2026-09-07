@@ -516,3 +516,25 @@ Files changed:
 
 - `src/main/java/serina/Serina.java`
 - `AI.md`
+
+## Code Quality Refactoring 5
+
+Instruction:
+
+Review the code against the CS2103 code quality guidelines and continue improving code quality using one
+stand-alone refactoring per commit.
+
+What Codex did:
+
+- Coding contribution: I extracted save-file validation helpers in `Storage.java` so task reconstruction reads as
+  validation followed by construction, without repeating compound error checks in every switch branch.
+- Identified repeated field-count and empty-field checks in `parseTask(...)` as the next highest-priority issue
+  because they obscured the happy path and mixed validation mechanics with task reconstruction.
+- Added `validateFieldCount(...)` to centralize record-size validation.
+- Added `validateNonEmptyField(...)` to centralize required-field validation for deadline and event date fields.
+- Kept malformed save-file behavior unchanged; invalid records still map to the same load error.
+
+Files changed:
+
+- `src/main/java/serina/storage/Storage.java`
+- `AI.md`
