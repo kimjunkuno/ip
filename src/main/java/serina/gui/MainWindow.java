@@ -226,6 +226,8 @@ public class MainWindow {
             userInput.setDisable(true);
             sendButton.setDisable(true);
             helpButton.setDisable(true);
+            // Closing the last window lets JavaFX shut down and the Gradle run task finish.
+            userInput.getScene().getWindow().hide();
         } else {
             userInput.requestFocus();
         }
