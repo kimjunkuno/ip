@@ -17,7 +17,7 @@ as authoritative.
 - Add an optional scope or category prefix only when it improves clarity, for example,
   `Parser: Handle empty find keywords`.
 - For a non-trivial commit, separate the subject from the body with a blank line.
-- Wrap body text at 72 characters and separate paragraphs with blank lines.
+- Do not hard-wrap commit-message body text at 72 characters. Keep each paragraph on one line and separate paragraphs with blank lines. This project preference overrides the linked SE-EDU body-wrapping convention.
 - Explain what changed and why it was needed. Leave implementation details that are evident from the diff out of
   the message.
 - Use bullet points when they make multiple changes easier to understand.

@@ -8,12 +8,14 @@ import serina.task.Task;
  * Builds the user-facing messages shared by Serina's console and graphical interfaces.
  */
 final class ResponseFormatter {
-    private static final String GREETING = String.join("\n",
-            "Hello! I'm Serina",
-            "What can I do for you?",
-            "Type help to see the available commands.");
+    // These three lines adapt Serina dialogue documented at https://halo.fandom.com/wiki/Serina/Quotes.
+    private static final String SYSTEMS_NORMAL = "Standard orbit achieved, all systems normal.";
+    private static final String HELP_HEADING = "Expecting trouble, " + SerinaDialogue.CAPTAIN_NAME
+            + "? Here are the available commands:";
+    private static final String TASK_ADDED = "Task logged, " + SerinaDialogue.CAPTAIN_NAME
+            + ". So...nothing too difficult, then?";
     private static final String HELP = String.join("\n",
-            "Here are the commands I can respond to:",
+            HELP_HEADING,
             "help - show this command list",
             "todo <task> - add a todo",
             "deadline <task> /by <yyyy-MM-dd> - add a deadline",
@@ -24,7 +26,8 @@ final class ResponseFormatter {
             "delete <number> - remove a task",
             "find <keywords> - find tasks containing all keywords",
             "bye - exit Serina");
-    private static final String GOODBYE = "Bye. Hope to see you again soon!";
+    private static final String GOODBYE = "Signing off, " + SerinaDialogue.CAPTAIN_NAME
+            + ". Do try to keep things orderly.";
 
     /**
      * Prevents instantiation of this response-formatting utility class.
@@ -37,8 +40,10 @@ final class ResponseFormatter {
      *
      * @return Greeting shown when Serina starts.
      */
-    static String formatGreeting() {
-        return GREETING;
+    static String formatGreeting(boolean areSystemsNormal) {
+        String greeting = "Standing by, " + SerinaDialogue.CAPTAIN_NAME
+                + ". Type help for available commands.";
+        return areSystemsNormal ? String.join("\n", greeting, SYSTEMS_NORMAL) : greeting;
     }
 
     /**
@@ -68,9 +73,9 @@ final class ResponseFormatter {
      */
     static String formatAddedTask(Task task, int taskCount) {
         return String.join("\n",
-                "Got it. I've added this task:",
+                TASK_ADDED,
                 "  " + task,
-                "Now you have " + taskCount + " tasks in the list.");
+                formatTaskCount(taskCount));
     }
 
     /**
@@ -81,7 +86,7 @@ final class ResponseFormatter {
      */
     static String formatMarkedTask(Task task) {
         return String.join("\n",
-                "Nice! I've marked this task as done:",
+                "Marked complete, " + SerinaDialogue.CAPTAIN_NAME + ". A measurable improvement.",
                 "  " + task);
     }
 
@@ -93,7 +98,7 @@ final class ResponseFormatter {
      */
     static String formatUnmarkedTask(Task task) {
         return String.join("\n",
-                "OK, I've marked this task as not done yet:",
+                "Back on the roster, " + SerinaDialogue.CAPTAIN_NAME + ". Optimism was premature.",
                 "  " + task);
     }
 
@@ -106,9 +111,9 @@ final class ResponseFormatter {
      */
     static String formatDeletedTask(Task task, int taskCount) {
         return String.join("\n",
-                "Noted. I've removed this task:",
+                "Task removed, " + SerinaDialogue.CAPTAIN_NAME + ". One less item on the roster.",
                 "  " + task,
-                "Now you have " + taskCount + " tasks in the list.");
+                formatTaskCount(taskCount));
     }
 
     /**
@@ -118,7 +123,11 @@ final class ResponseFormatter {
      * @return Numbered task-list response.
      */
     static String formatTaskList(List<Task> tasks) {
-        return formatNumberedTasks("Here are the tasks in your list:", tasks);
+        if (tasks.isEmpty()) {
+            return "No tasks on the roster, " + SerinaDialogue.CAPTAIN_NAME
+                    + ". An unusually peaceful situation.";
+        }
+        return formatNumberedTasks("Your task roster, " + SerinaDialogue.CAPTAIN_NAME + ":", tasks);
     }
 
     /**
@@ -128,7 +137,10 @@ final class ResponseFormatter {
      * @return Numbered matching-task response.
      */
     static String formatMatchingTasks(List<Task> tasks) {
-        return formatNumberedTasks("Here are the matching tasks in your list:", tasks);
+        if (tasks.isEmpty()) {
+            return "No matching tasks, " + SerinaDialogue.CAPTAIN_NAME + ". Try different keywords.";
+        }
+        return formatNumberedTasks("Matching tasks, " + SerinaDialogue.CAPTAIN_NAME + ":", tasks);
     }
 
     /**
@@ -140,5 +152,13 @@ final class ResponseFormatter {
             response.append('\n').append(i + 1).append('.').append(tasks.get(i));
         }
         return response.toString();
+    }
+
+    /**
+     * Returns a grammatically correct summary of the current task count.
+     */
+    private static String formatTaskCount(int taskCount) {
+        String taskWord = taskCount == 1 ? "task" : "tasks";
+        return "Now you have " + taskCount + " " + taskWord + " on the roster.";
     }
 }

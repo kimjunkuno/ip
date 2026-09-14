@@ -2,32 +2,30 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Priority?>
-<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
 
 <fx:root alignment="TOP_RIGHT" fillHeight="true" maxWidth="1.7976931348623157E308"
          type="javafx.scene.layout.HBox" xmlns="http://javafx.com/javafx/17"
          xmlns:fx="http://javafx.com/fxml/1">
     <children>
-        <Label fx:id="messageLabel" maxWidth="1.7976931348623157E308"
-               minHeight="-Infinity" styleClass="message-bubble" wrapText="true"
-               HBox.hgrow="ALWAYS">
-            <HBox.margin>
-                <Insets left="8.0" right="8.0" />
-            </HBox.margin>
+        <VBox fx:id="messagePanel" minWidth="0.0" spacing="4.0" styleClass="message-panel">
             <padding>
-                <Insets bottom="9.0" left="11.0" right="11.0" top="9.0" />
+                <Insets bottom="10.0" left="12.0" right="12.0" top="10.0" />
             </padding>
-        </Label>
-        <StackPane fx:id="avatarPlaceholder" maxHeight="40.0" maxWidth="40.0"
-                   minHeight="40.0" minWidth="40.0" prefHeight="40.0" prefWidth="40.0"
-                   styleClass="avatar-placeholder">
             <children>
-                <ImageView fx:id="displayPicture" fitHeight="40.0" fitWidth="40.0"
-                           pickOnBounds="true" preserveRatio="true" />
+                <HBox fx:id="severityHeading" alignment="CENTER_LEFT" managed="false"
+                      spacing="5.0" visible="false">
+                    <children>
+                        <Label fx:id="severityIcon" styleClass="severity-icon" />
+                        <Label fx:id="severityLabel" styleClass="severity-label" />
+                    </children>
+                </HBox>
+                <Label fx:id="messageLabel" maxWidth="1.7976931348623157E308"
+                       minHeight="-Infinity" minWidth="0.0" styleClass="message-text"
+                       wrapText="true" VBox.vgrow="ALWAYS" />
             </children>
-        </StackPane>
+        </VBox>
     </children>
 </fx:root>

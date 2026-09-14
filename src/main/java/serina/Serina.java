@@ -35,7 +35,7 @@ public class Serina {
 
     private final Storage storage;
     private final TaskList tasks;
-    private final List<String> startupMessages;
+    private final List<ResponseMessage> startupResponses;
 
     /**
      * Creates Serina using the default save-file location.
@@ -53,17 +53,17 @@ public class Serina {
         this.storage = storage;
 
         TaskList loadedTasks;
-        List<String> loadingMessages;
+        List<ResponseMessage> loadingResponses;
         try {
             loadedTasks = new TaskList(storage.loadTasks());
-            loadingMessages = List.of();
+            loadingResponses = List.of();
         } catch (SerinaException e) {
             loadedTasks = new TaskList();
-            loadingMessages = List.of(e.getMessage());
+            loadingResponses = List.of(ResponseMessage.warning(e.getMessage()));
         }
 
         tasks = loadedTasks;
-        startupMessages = loadingMessages;
+        startupResponses = loadingResponses;
     }
 
     /**
@@ -98,7 +98,7 @@ public class Serina {
      * @return Greeting shown when a conversation starts.
      */
     public String getGreeting() {
-        return ResponseFormatter.formatGreeting();
+        return ResponseFormatter.formatGreeting(startupResponses.isEmpty());
     }
 
     /**
@@ -107,7 +107,18 @@ public class Serina {
      * @return Loading warnings in display order.
      */
     public List<String> getStartupMessages() {
-        return startupMessages;
+        return startupResponses.stream()
+                .map(ResponseMessage::getText)
+                .toList();
+    }
+
+    /**
+     * Returns typed messages produced while loading saved tasks.
+     *
+     * @return Loading warnings in display order.
+     */
+    public List<ResponseMessage> getStartupResponses() {
+        return startupResponses;
     }
 
     /**
@@ -129,9 +140,11 @@ public class Serina {
             return new CommandResult(false, response);
         } catch (SerinaException e) {
             if (e.shouldExit()) {
-                return new CommandResult(true, e.getMessage(), ResponseFormatter.formatGoodbye());
+                return CommandResult.ofMessages(true,
+                        ResponseMessage.error(e.getMessage()),
+                        ResponseMessage.normal(ResponseFormatter.formatGoodbye()));
             }
-            return new CommandResult(false, e.getMessage());
+            return CommandResult.ofMessages(false, ResponseMessage.error(e.getMessage()));
         }
     }
 

@@ -26,19 +26,18 @@ public class SerinaTest {
         Serina serina = createSerina();
 
         assertEquals(String.join("\n",
-                "Hello! I'm Serina",
-                "What can I do for you?",
-                "Type help to see the available commands."), serina.getGreeting());
+                "Standing by, Captain Cutter. Type help for available commands.",
+                "Standard orbit achieved, all systems normal."), serina.getGreeting());
     }
 
     @Test
-    public void executeCommand_help_returnsExistingHelpText() {
+    public void executeCommand_help_returnsPersonalizedHelpText() {
         Serina serina = createSerina();
 
         CommandResult result = serina.executeCommand("help");
 
         assertResponses(result, String.join("\n",
-                "Here are the commands I can respond to:",
+                "Expecting trouble, Captain Cutter? Here are the available commands:",
                 "help - show this command list",
                 "todo <task> - add a todo",
                 "deadline <task> /by <yyyy-MM-dd> - add a deadline",
@@ -62,7 +61,7 @@ public class SerinaTest {
         CommandResult result = serina.executeCommand("find REP PROJ");
 
         assertResponses(result, String.join("\n",
-                "Here are the matching tasks in your list:",
+                "Matching tasks, Captain Cutter:",
                 "1.[T][ ] Submit Project report"));
         assertFalse(result.shouldExit());
     }
@@ -78,23 +77,23 @@ public class SerinaTest {
         CommandResult reloadedListResult = reloadedSerina.executeCommand("list");
 
         assertResponses(addResult, String.join("\n",
-                "Got it. I've added this task:",
+                "Task logged, Captain Cutter. So...nothing too difficult, then?",
                 "  [T][ ] read book",
-                "Now you have 1 tasks in the list."));
+                "Now you have 1 task on the roster."));
         assertResponses(listResult, String.join("\n",
-                "Here are the tasks in your list:",
+                "Your task roster, Captain Cutter:",
                 "1.[T][ ] read book"));
         assertEquals(listResult.getResponses(), reloadedListResult.getResponses());
     }
 
     @Test
-    public void executeCommand_unknownCommand_returnsExistingErrorAndContinues() {
+    public void executeCommand_unknownCommand_returnsTypedErrorAndContinues() {
         Serina serina = createSerina();
 
         CommandResult result = serina.executeCommand("nonsense");
 
-        assertResponses(result,
-                "Sorry captain, could you rephrase that for me? Type help to see the available commands.");
+        assertResponses(result, "Captain Cutter, that order is unclear. Type help for available commands.");
+        assertEquals(ResponseType.ERROR, result.getMessages().get(0).getType());
         assertFalse(result.shouldExit());
     }
 
@@ -104,7 +103,8 @@ public class SerinaTest {
 
         CommandResult result = serina.executeCommand("bye");
 
-        assertResponses(result, "Bye. Hope to see you again soon!");
+        assertResponses(result, "Signing off, Captain Cutter. Do try to keep things orderly.");
+        assertEquals(ResponseType.NORMAL, result.getMessages().get(0).getType());
         assertTrue(result.shouldExit());
     }
 
@@ -115,8 +115,67 @@ public class SerinaTest {
 
         Serina serina = new Serina(new Storage(saveFile));
 
-        assertEquals(List.of("Sorry captain, I couldn't load your saved tasks."), serina.getStartupMessages());
-        assertResponses(serina.executeCommand("list"), "Here are the tasks in your list:");
+        assertEquals(List.of("Captain Cutter, I couldn't load your saved tasks."), serina.getStartupMessages());
+        assertEquals(ResponseType.WARNING, serina.getStartupResponses().get(0).getType());
+        assertFalse(serina.getGreeting().contains("all systems normal"));
+        assertResponses(serina.executeCommand("list"),
+                "No tasks on the roster, Captain Cutter. An unusually peaceful situation.");
+    }
+
+    @Test
+    public void executeCommand_emptyListAndSearch_returnsHelpfulResponses() {
+        Serina serina = createSerina();
+
+        assertResponses(serina.executeCommand("list"),
+                "No tasks on the roster, Captain Cutter. An unusually peaceful situation.");
+        assertResponses(serina.executeCommand("find missing"),
+                "No matching tasks, Captain Cutter. Try different keywords.");
+    }
+
+    @Test
+    public void executeCommand_updateTasks_returnsPersonalizedStatusMessages() {
+        Serina serina = createSerina();
+        serina.executeCommand("todo first task");
+        serina.executeCommand("todo second task");
+
+        assertResponses(serina.executeCommand("mark 1"), String.join("\n",
+                "Marked complete, Captain Cutter. A measurable improvement.",
+                "  [T][X] first task"));
+        assertResponses(serina.executeCommand("unmark 1"), String.join("\n",
+                "Back on the roster, Captain Cutter. Optimism was premature.",
+                "  [T][ ] first task"));
+        assertResponses(serina.executeCommand("delete 1"), String.join("\n",
+                "Task removed, Captain Cutter. One less item on the roster.",
+                "  [T][ ] first task",
+                "Now you have 1 task on the roster."));
+    }
+
+    @Test
+    public void executeCommand_taskLimitError_returnsErrorThenGoodbye() {
+        Serina serina = createSerina();
+        for (int taskNumber = 1; taskNumber <= 100; taskNumber++) {
+            serina.executeCommand("todo task " + taskNumber);
+        }
+
+        CommandResult result = serina.executeCommand("todo one task too many");
+
+        assertResponses(result,
+                "Captain Cutter, the 100-task limit has been reached.",
+                "Signing off, Captain Cutter. Do try to keep things orderly.");
+        assertEquals(ResponseType.ERROR, result.getMessages().get(0).getType());
+        assertEquals(ResponseType.NORMAL, result.getMessages().get(1).getType());
+        assertTrue(result.shouldExit());
+    }
+
+    @Test
+    public void commandResult_typedMessages_preservesTextAccessorOrder() {
+        CommandResult result = CommandResult.ofMessages(false,
+                ResponseMessage.warning("first"), ResponseMessage.normal("second"));
+
+        assertEquals(List.of("first", "second"), result.getResponses());
+        assertEquals(List.of(ResponseType.WARNING, ResponseType.NORMAL), result.getMessages().stream()
+                .map(ResponseMessage::getType)
+                .toList());
     }
 
     /**
