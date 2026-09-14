@@ -108,3 +108,48 @@ original data.
 
 Place an invalid record on line 2 of the save file and start Serina. Serina should identify line 2, keep `help` and
 `bye` usable, and reject task-data commands. Verify that the invalid file remains unchanged.
+
+## More Testing
+
+Run the portable automated suite with Java 25 using `./gradlew test jacocoTestReport`. The HTML coverage report is
+generated at `build/reports/jacoco/test/html/index.html`. Run display-dependent JavaFX checks separately using
+`./gradlew guiTest`.
+
+### MT-01: Supported operating systems
+
+Run `./gradlew check javadoc shadowJar jacocoTestReport` on current Windows, macOS, and Linux installations.
+Confirm all portable tests and quality checks pass and the packaged JAR is produced. Record the OS version and CPU
+architecture. The GitHub Actions operating-system matrix performs the same portable checks automatically.
+
+### MT-02: Window sizes and display scaling
+
+Launch the GUI at 1366x768 and 1920x1080 screen resolutions, plus a high-resolution display when available. Repeat
+at 100%, 150%, and 200% display scaling where the OS supports those settings. Test the minimum window size, default
+size, maximized window, and repeated shrinking after expansion. Confirm Help, Send, and the command text remain
+visible; messages wrap without horizontal clipping; and the transcript remains readable.
+
+### MT-03: English and Chinese environments
+
+Launch Serina once with an English OS language and once with a Chinese OS language. Enter Chinese descriptions,
+emoji, and dates through the normal input method. Confirm Chinese input-method composition can be completed without
+submitting an unfinished command, dates remain in Serina's documented English display format, and saved tasks
+survive a restart without damaged characters.
+
+### MT-04: Long and maximum-size conversations
+
+Enter a long command, a long word without spaces, several multiline responses through `help` and `list`, and a list
+containing 100 tasks. Confirm input focus remains usable, response text wraps, errors retain their visible heading,
+and scrolling reaches both the beginning and end of every response.
+
+### MT-05: Storage environments
+
+Test first launch, restart, a malformed save file, a location with denied access, restored access, and a path whose
+folders contain spaces and Chinese characters. Confirm Serina never overwrites an invalid file, explains failures,
+keeps Help and exit available after a load failure, and resumes normal operation after the storage problem is fixed
+and the application is restarted.
+
+### Environment-dependent limitations
+
+Permission denial, disk exhaustion, interrupted processes, and filesystems without atomic-move support are manual
+checks because they cannot be reproduced reliably on every development machine. Automated tests use temporary
+directories and injected save failures to verify the corresponding application rollback behavior deterministically.

@@ -66,3 +66,12 @@ task-data commands from overwriting it. Repair the file or its permissions and r
 ## Feature XYZ
 
 // Feature details
+## Testing
+
+Use Java 25 to run `./gradlew check javadoc shadowJar jacocoTestReport`. This runs the portable JUnit suite,
+Checkstyle, Javadoc, packaging, and coverage verification. Open
+`build/reports/jacoco/test/html/index.html` for class-by-class coverage details.
+
+JavaFX layout tests require a graphical display and run separately with `./gradlew guiTest`. The full manual test
+matrix for operating systems, resolutions, display scaling, languages, long content, and storage failures is in
+`tests/test-plan.md`.
