@@ -68,4 +68,16 @@ public class EventTest {
 
         assertEquals("E | 1 | orientation | 2026-08-10 | 2026-08-12", event.toFileString());
     }
+
+    @Test
+    public void copy_unmarkingCopy_doesNotChangeOriginal() {
+        event.markAsDone();
+        Task copy = event.copy();
+
+        copy.markAsNotDone();
+
+        assertTrue(event.isDone());
+        assertFalse(copy.isDone());
+        assertEquals(TaskType.EVENT, copy.getTaskType());
+    }
 }

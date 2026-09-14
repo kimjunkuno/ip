@@ -173,7 +173,7 @@ public class Storage {
         assert status != null : "Task status parsing should return a status or throw a SerinaException.";
 
         String description = parts.get(TASK_DESCRIPTION_FIELD_INDEX);
-        if (description.isEmpty()) {
+        if (description.isBlank()) {
             throw new SerinaException(SerinaError.LOAD_FAILED);
         }
         assert !description.isBlank() : "Loaded task descriptions should be validated before task construction.";

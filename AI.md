@@ -645,3 +645,54 @@ Files changed:
 - `docs/README.md`
 - `tests/test-plan.md`
 - `AI.md`
+
+## Level A-MoreTesting
+
+Instruction:
+
+Write more JUnit tests to cover nearly all code that can be tested automatically, and supplement them with manual
+testing for GUI and environment-specific behavior.
+
+What Codex did:
+
+- Added focused JUnit coverage for command parsing, strict date handling, task identity and copying, task-list
+  mutation boundaries, response objects and formatting, exceptions, console input/output, and command execution.
+- Expanded storage tests to cover missing and empty files, all task types, Unicode and escaped content, malformed
+  records, physical line numbers, the 100-task boundary, safe replacement, temporary-file cleanup, and deterministic
+  filesystem failures.
+- Added command-level tests that verify read-only and repeated no-op commands do not save, while failed add, delete,
+  mark, and unmark operations leave the published task list unchanged.
+- Added an end-to-end persistence sequence covering todos, deadlines, events, completion state, deletion, and restart.
+- Added JUnit parameterized-test support and JaCoCo HTML/XML reporting, with coverage verification for non-GUI code.
+- Tagged JavaFX tests so portable tests and display-dependent tests can run independently.
+- Extended continuous integration to run portable Java 25 checks on Windows, macOS, and Linux, run JavaFX tests on a
+  Linux virtual display, and retain test, coverage, Checkstyle, and GUI artifacts.
+- Added a manual test matrix covering operating systems, screen resolutions, display scaling, English and Chinese
+  environments, long content, maximum-size task lists, and storage failures that are not portable to automate.
+- Tightened save-file validation so descriptions containing only whitespace are rejected consistently.
+
+Files changed:
+
+- `build.gradle`
+- `.github/workflows/gradle.yml`
+- `src/main/java/serina/storage/Storage.java`
+- `src/test/java/serina/CommandResultTest.java`
+- `src/test/java/serina/ResponseFormatterTest.java`
+- `src/test/java/serina/ResponseMessageTest.java`
+- `src/test/java/serina/SerinaDialogueTest.java`
+- `src/test/java/serina/SerinaTest.java`
+- `src/test/java/serina/exception/SerinaExceptionTest.java`
+- `src/test/java/serina/gui/MainWindowTest.java`
+- `src/test/java/serina/parser/CommandParserTest.java`
+- `src/test/java/serina/parser/DateParserTest.java`
+- `src/test/java/serina/storage/StorageTest.java`
+- `src/test/java/serina/task/DeadlineTest.java`
+- `src/test/java/serina/task/EventTest.java`
+- `src/test/java/serina/task/TaskEnumTest.java`
+- `src/test/java/serina/task/TaskIdentityTest.java`
+- `src/test/java/serina/task/TaskListTest.java`
+- `src/test/java/serina/task/TodoTest.java`
+- `src/test/java/serina/ui/UiTest.java`
+- `tests/test-plan.md`
+- `docs/README.md`
+- `AI.md`

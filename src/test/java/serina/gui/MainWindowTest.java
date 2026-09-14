@@ -17,6 +17,7 @@ import javax.imageio.ImageIO;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -44,6 +45,7 @@ import serina.storage.Storage;
 /**
  * Tests Serina's JavaFX controls and minimum-size layout.
  */
+@Tag("gui")
 public class MainWindowTest {
     private static final int SNAPSHOT_HEIGHT = 520;
     private static final int SNAPSHOT_WIDTH = 420;
