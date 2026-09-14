@@ -7,11 +7,18 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Circle;
 import serina.CommandResult;
 import serina.ResponseMessage;
 import serina.Serina;
@@ -22,6 +29,9 @@ import serina.Serina;
 public class MainWindow {
     private static final double BOTTOM_TOLERANCE = 0.005;
     private static final double COMMAND_GROUP_MARGIN = 8;
+    private static final double COMPACT_HEADER_WIDTH = 480;
+    private static final double PORTRAIT_SIZE = 40;
+    private static final double WIDE_HEADER_WIDTH = 720;
 
     @FXML
     private ScrollPane scrollPane;
@@ -33,6 +43,18 @@ public class MainWindow {
     private Button sendButton;
     @FXML
     private Button helpButton;
+    @FXML
+    private StackPane appHeader;
+    @FXML
+    private ImageView headerBackground;
+    @FXML
+    private ImageView serinaPortrait;
+    @FXML
+    private ImageView cutterPortrait;
+    @FXML
+    private Label headerSubtitle;
+    @FXML
+    private HBox captainIdentity;
 
     private Serina serina;
     private long scheduledScrollVersion;
@@ -49,6 +71,12 @@ public class MainWindow {
      */
     @FXML
     private void initialize() {
+        configureHeaderImages();
+        appHeader.widthProperty().addListener((observable, oldWidth, newWidth) -> {
+            updateHeaderVisibility(newWidth.doubleValue());
+        });
+        updateHeaderVisibility(appHeader.getWidth());
+
         scrollPane.viewportBoundsProperty().addListener((observable, oldBounds, newBounds) -> {
             if (isCommandScrollPending || oldBounds.equals(newBounds)) {
                 return;
@@ -65,6 +93,62 @@ public class MainWindow {
             });
         });
         Platform.runLater(userInput::requestFocus);
+    }
+
+    /**
+     * Loads, sizes, and crops the decorative header artwork.
+     */
+    private void configureHeaderImages() {
+        headerBackground.setImage(loadImage("/images/chat-background.png"));
+        headerBackground.fitWidthProperty().bind(appHeader.widthProperty());
+        headerBackground.fitHeightProperty().bind(appHeader.heightProperty());
+        configurePortrait(serinaPortrait, "/images/serina-avatar.png", PORTRAIT_SIZE);
+        configurePortrait(cutterPortrait, "/images/user-avatar.png", cutterPortrait.getFitWidth());
+    }
+
+    /**
+     * Configures a circular, centered crop for one header portrait.
+     */
+    private static void configurePortrait(ImageView imageView, String resourcePath, double portraitSize) {
+        Image image = loadImage(resourcePath);
+        imageView.setImage(image);
+        imageView.setViewport(createSquareViewport(image));
+        imageView.setClip(new Circle(portraitSize / 2, portraitSize / 2, portraitSize / 2));
+    }
+
+    /**
+     * Returns a centered square crop that prevents portrait distortion.
+     */
+    private static Rectangle2D createSquareViewport(Image image) {
+        double sideLength = Math.min(image.getWidth(), image.getHeight());
+        double minimumX = (image.getWidth() - sideLength) / 2;
+        double minimumY = (image.getHeight() - sideLength) / 2;
+        return new Rectangle2D(minimumX, minimumY, sideLength, sideLength);
+    }
+
+    /**
+     * Shows secondary identity details only when enough header width is available.
+     */
+    private void updateHeaderVisibility(double headerWidth) {
+        setVisibleAndManaged(headerSubtitle, headerWidth >= COMPACT_HEADER_WIDTH);
+        setVisibleAndManaged(captainIdentity, headerWidth >= WIDE_HEADER_WIDTH);
+    }
+
+    /**
+     * Updates whether a node is drawn and participates in layout.
+     */
+    private static void setVisibleAndManaged(Node node, boolean isVisible) {
+        node.setVisible(isVisible);
+        node.setManaged(isVisible);
+    }
+
+    /**
+     * Loads an image packaged with the application.
+     */
+    private static Image loadImage(String resourcePath) {
+        return new Image(Objects.requireNonNull(
+                MainWindow.class.getResourceAsStream(resourcePath),
+                "Image resource is missing: " + resourcePath));
     }
 
     /**

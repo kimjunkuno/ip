@@ -2,6 +2,7 @@ package serina.gui;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -30,9 +31,11 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelReader;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import serina.ResponseMessage;
 import serina.Serina;
@@ -108,6 +111,9 @@ public class MainWindowTest {
             Label errorHeading = (Label) errorPanel.lookup(".severity-label");
             assertEquals("Error", errorHeading.getText());
             assertMessageWidthsAreAsymmetric(dialogContainer);
+            ScrollPane scrollPane = (ScrollPane) root.lookup("#scrollPane");
+            scrollPane.setVvalue(scrollPane.getVmax());
+            saveSnapshot(root, SNAPSHOT_WIDTH, SNAPSHOT_HEIGHT, "serina-error-window.png");
 
             userInput.setText("bye");
             sendButton.fire();
@@ -158,12 +164,76 @@ public class MainWindowTest {
 
                 TextField userInput = (TextField) root.lookup("#userInput");
                 Button sendButton = (Button) root.lookup("#sendButton");
+                Node headerSubtitle = root.lookup("#headerSubtitle");
+                Node captainIdentity = root.lookup("#captainIdentity");
+                ImageView serinaPortrait = (ImageView) root.lookup("#serinaPortrait");
+                ImageView headerBackground = (ImageView) root.lookup("#headerBackground");
                 assertControlsDoNotOverlap(userInput, sendButton, scene);
+                assertEquals(windowSize[0] >= 480, headerSubtitle.isVisible());
+                assertEquals(windowSize[0] >= 720, captainIdentity.isVisible());
+                assertNotNull(serinaPortrait.getImage());
+                assertNotNull(serinaPortrait.getClip());
+                assertEquals(windowSize[0], headerBackground.getFitWidth(), 1.0);
                 String fileName = "serina-main-window-" + windowSize[0] + "x" + windowSize[1] + ".png";
                 saveSnapshot(root, windowSize[0], windowSize[1], fileName);
                 return null;
             });
         }
+    }
+
+    @Test
+    public void mainWindow_shrinkAfterExpansion_keepsHelpInputAndMessagesWithinViewport() throws Exception {
+        runOnJavaFxThread(() -> {
+            FXMLLoader loader = new FXMLLoader(Main.class.getResource("/view/MainWindow.fxml"));
+            Region root = loader.load();
+            MainWindow controller = loader.getController();
+            controller.setSerina(new Serina(new Storage(temporaryDirectory.resolve("horizontal-resize.txt"))));
+            StackPane host = new StackPane(root);
+            Scene scene = new Scene(host, 900, 720);
+            scene.getStylesheets().add(Main.class.getResource("/css/main.css").toExternalForm());
+            host.resize(900, 720);
+            host.applyCss();
+            host.layout();
+
+            TextField userInput = (TextField) root.lookup("#userInput");
+            Button helpButton = (Button) root.lookup("#helpButton");
+            Button sendButton = (Button) root.lookup("#sendButton");
+            userInput.setText("todo " + "Review the mission briefing carefully. ".repeat(5));
+            sendButton.fire();
+            userInput.setText("todo unfinished order");
+
+            int[] widths = {900, 560, 480, 479, 420, 400, 320, 900, 420};
+            for (int width : widths) {
+                host.resize(width, 720);
+                host.applyCss();
+                host.layout();
+                assertTrue(root.getWidth() <= width + 1, "Window must shrink to " + width);
+                assertWithinHorizontalViewport(helpButton, width);
+                assertWithinHorizontalViewport(userInput, width);
+                assertWithinHorizontalViewport(sendButton, width);
+                assertTrue(userInput.getWidth() >= 100, "Input must remain usable at " + width);
+                for (Node messagePanel : root.lookupAll(".message-panel")) {
+                    assertWithinHorizontalViewport(messagePanel, width);
+                }
+                assertEquals("todo unfinished order", userInput.getText());
+            }
+
+            helpButton.fire();
+            assertEquals("todo unfinished order", userInput.getText());
+            host.applyCss();
+            host.layout();
+            saveSnapshot(root, 420, 720, "serina-horizontal-resize.png");
+            return null;
+        });
+    }
+
+    /**
+     * Checks both edges of a control or message against the current viewport width.
+     */
+    private static void assertWithinHorizontalViewport(Node node, double width) {
+        Bounds bounds = node.localToScene(node.getBoundsInLocal());
+        assertTrue(bounds.getMinX() >= -1, "Left edge must remain visible: " + node.getId());
+        assertTrue(bounds.getMaxX() <= width + 1, "Right edge must remain visible: " + node.getId());
     }
 
     @Test
