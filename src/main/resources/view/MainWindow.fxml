@@ -15,21 +15,24 @@
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="serina.gui.MainWindow">
     <top>
-        <HBox alignment="CENTER_LEFT" styleClass="app-header">
+        <HBox alignment="CENTER_LEFT" spacing="8.0" styleClass="app-header">
             <padding>
-                <Insets bottom="14.0" left="18.0" right="18.0" top="14.0" />
+                <Insets bottom="10.0" left="12.0" right="12.0" top="10.0" />
             </padding>
-            <Label styleClass="brand-label" text="Serina" />
+            <Label maxWidth="1.7976931348623157E308" styleClass="brand-label"
+                   text="Serina" HBox.hgrow="ALWAYS" />
+            <Button fx:id="helpButton" onAction="#handleHelp" styleClass="help-button"
+                    text="Help" />
         </HBox>
     </top>
     <center>
         <ScrollPane fx:id="scrollPane" fitToWidth="true" hbarPolicy="NEVER"
                     pannable="true" styleClass="chat-scroll" vbarPolicy="AS_NEEDED">
             <content>
-                <VBox fx:id="dialogContainer" fillWidth="true" spacing="8.0"
+                <VBox fx:id="dialogContainer" fillWidth="true" spacing="6.0"
                       styleClass="dialog-container">
                     <padding>
-                        <Insets bottom="14.0" left="12.0" right="12.0" top="14.0" />
+                        <Insets bottom="12.0" left="12.0" right="12.0" top="12.0" />
                     </padding>
                 </VBox>
             </content>
@@ -44,7 +47,7 @@
                 <Insets bottom="12.0" left="12.0" right="12.0" top="12.0" />
             </padding>
             <TextField fx:id="userInput" maxWidth="1.7976931348623157E308"
-                       onAction="#handleUserInput" promptText="Message Serina"
+                       onAction="#handleUserInput" promptText="Enter a command…"
                        HBox.hgrow="ALWAYS" />
             <Button fx:id="sendButton" minWidth="84.0" onAction="#handleUserInput"
                     styleClass="send-button" text="Send" />

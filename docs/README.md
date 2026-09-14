@@ -30,13 +30,13 @@ Example: `find proj rep`
 Given a task named `Submit Project report`, the expected output is:
 
 ```text
-Here are the matching tasks in your list:
+Matching tasks, Captain Cutter:
 1.[T][ ] Submit Project report
 ```
 
 Searches examine task descriptions only. Results remain in task-list order and are numbered from `1` within the
-matching results. When nothing matches, Serina displays only the matching-tasks heading. A `find` command without
-keywords is rejected.
+matching results. When nothing matches, Serina reports that no matching tasks were found and suggests trying
+different keywords. A `find` command without keywords is rejected and shows the required command format.
 
 ## Feature ABC
 

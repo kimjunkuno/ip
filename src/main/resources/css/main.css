@@ -1,6 +1,6 @@
 .root {
     -fx-background-color: #f4f6f5;
-    -fx-font-family: "Arial";
+    -fx-font-family: system;
     -fx-font-size: 14px;
 }
 
@@ -8,38 +8,31 @@
     -fx-background-color: #ffffff;
     -fx-border-color: transparent transparent #d8dfdc transparent;
     -fx-border-width: 0 0 1px 0;
-    -fx-min-height: 58px;
+    -fx-min-height: 52px;
 }
 
 .brand-label {
     -fx-text-fill: #182421;
-    -fx-font-size: 20px;
+    -fx-font-size: 18px;
     -fx-font-weight: bold;
 }
 
-.chat-scroll > .viewport {
-    -fx-background-color: transparent;
-    -fx-background-image: url("../images/chat-background.png");
-    -fx-background-position: center center;
-    -fx-background-repeat: no-repeat;
-    -fx-background-size: cover;
+.chat-scroll,
+.chat-scroll > .viewport,
+.dialog-container {
+    -fx-background-color: #f4f6f5;
 }
 
 .chat-scroll {
-    -fx-background-color: #f4f6f5;
     -fx-border-width: 0;
     -fx-padding: 0;
-}
-
-.dialog-container {
-    -fx-background-color: transparent;
 }
 
 .composer {
     -fx-background-color: #ffffff;
     -fx-border-color: #d8dfdc transparent transparent transparent;
     -fx-border-width: 1px 0 0 0;
-    -fx-min-height: 66px;
+    -fx-min-height: 64px;
 }
 
 .text-field {
@@ -47,23 +40,34 @@
     -fx-border-color: #aebbb6;
     -fx-border-radius: 6px;
     -fx-background-radius: 6px;
-    -fx-padding: 10px 12px;
-    -fx-pref-height: 42px;
+    -fx-padding: 9px 12px;
+    -fx-pref-height: 40px;
 }
 
 .text-field:focused {
     -fx-border-color: #147d74;
     -fx-border-width: 2px;
-    -fx-padding: 9px 11px;
+    -fx-padding: 8px 11px;
+}
+
+.send-button,
+.help-button {
+    -fx-background-radius: 6px;
+    -fx-cursor: hand;
+    -fx-font-weight: bold;
 }
 
 .send-button {
     -fx-background-color: #147d74;
-    -fx-background-radius: 6px;
+    -fx-pref-height: 40px;
     -fx-text-fill: #ffffff;
-    -fx-font-weight: bold;
-    -fx-pref-height: 42px;
-    -fx-cursor: hand;
+}
+
+.help-button {
+    -fx-background-color: transparent;
+    -fx-border-color: #aebbb6;
+    -fx-border-radius: 6px;
+    -fx-text-fill: #147d74;
 }
 
 .send-button:hover {
@@ -74,44 +78,91 @@
     -fx-background-color: #0b514c;
 }
 
-.send-button:disabled {
-    -fx-background-color: #9faaa6;
-    -fx-opacity: 1;
+.help-button:hover {
+    -fx-background-color: #edf5f3;
 }
 
-.message-bubble {
+.send-button:focused,
+.help-button:focused {
+    -fx-border-color: #182421;
+    -fx-border-width: 2px;
+}
+
+.send-button:disabled,
+.help-button:disabled {
+    -fx-background-color: #d8dfdc;
+    -fx-border-color: #aebbb6;
+    -fx-opacity: 1;
+    -fx-text-fill: #65716d;
+}
+
+.message-panel {
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
     -fx-border-width: 1px;
-    -fx-background-radius: 8px;
-    -fx-border-radius: 8px;
+}
+
+.message-text {
     -fx-line-spacing: 2px;
 }
 
-.user-bubble {
+.user-panel {
     -fx-background-color: #147d74;
     -fx-border-color: #147d74;
+}
+
+.user-panel .message-text {
     -fx-text-fill: #ffffff;
 }
 
-.serina-bubble {
+.serina-panel {
     -fx-background-color: #ffffff;
-    -fx-border-color: #cbd5d1;
+    -fx-border-color: #d8dfdc;
+}
+
+.serina-panel .message-text {
     -fx-text-fill: #182421;
 }
 
-.avatar-placeholder {
-    -fx-background-color: #e5e8e7;
-    -fx-background-radius: 20px;
-    -fx-border-color: #b9c2bf;
-    -fx-border-radius: 20px;
-    -fx-border-width: 1px;
+.error-panel {
+    -fx-background-color: #fff1f0;
+    -fx-border-color: #9f2420 #d8dfdc #d8dfdc #9f2420;
+    -fx-border-width: 1px 1px 1px 4px;
 }
 
-.user-avatar {
-    -fx-border-color: #147d74;
+.error-panel .message-text,
+.error-panel .severity-label,
+.error-panel .severity-icon {
+    -fx-text-fill: #9f2420;
 }
 
-.serina-avatar {
-    -fx-border-color: #d96b54;
+.warning-panel {
+    -fx-background-color: #fff8e6;
+    -fx-border-color: #805500 #d8dfdc #d8dfdc #805500;
+    -fx-border-width: 1px 1px 1px 4px;
+}
+
+.warning-panel .message-text,
+.warning-panel .severity-label,
+.warning-panel .severity-icon {
+    -fx-text-fill: #805500;
+}
+
+.severity-label,
+.severity-icon {
+    -fx-font-weight: bold;
+}
+
+.severity-icon {
+    -fx-alignment: center;
+    -fx-border-color: #805500;
+    -fx-border-radius: 8px;
+    -fx-min-height: 16px;
+    -fx-min-width: 16px;
+}
+
+.error-panel .severity-icon {
+    -fx-border-color: #9f2420;
 }
 
 .scroll-bar:vertical {

@@ -1,23 +1,27 @@
 package serina.gui;
 
+import java.util.List;
 import java.util.Objects;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.geometry.Bounds;
+import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
 import javafx.scene.layout.VBox;
 import serina.CommandResult;
+import serina.ResponseMessage;
 import serina.Serina;
 
 /**
  * Controls Serina's main chat window.
  */
 public class MainWindow {
-    private static final Image SERINA_IMAGE = loadImage("/images/serina-avatar.png");
-    private static final Image USER_IMAGE = loadImage("/images/user-avatar.png");
+    private static final double BOTTOM_TOLERANCE = 0.005;
+    private static final double COMMAND_GROUP_MARGIN = 8;
 
     @FXML
     private ScrollPane scrollPane;
@@ -27,8 +31,12 @@ public class MainWindow {
     private TextField userInput;
     @FXML
     private Button sendButton;
+    @FXML
+    private Button helpButton;
 
     private Serina serina;
+    private long scheduledScrollVersion;
+    private boolean isCommandScrollPending;
 
     /**
      * Creates the controller used by the main-window FXML document.
@@ -37,12 +45,24 @@ public class MainWindow {
     }
 
     /**
-     * Initializes scrolling and input behavior after FXML fields are injected.
+     * Initializes responsive scrolling and input focus after FXML fields are injected.
      */
     @FXML
     private void initialize() {
-        dialogContainer.heightProperty().addListener((observable, oldHeight, newHeight) -> {
-            scrollPane.setVvalue(1.0);
+        scrollPane.viewportBoundsProperty().addListener((observable, oldBounds, newBounds) -> {
+            if (isCommandScrollPending || oldBounds.equals(newBounds)) {
+                return;
+            }
+
+            boolean wasAtBottom = isScrolledToBottom();
+            ScrollAnchor anchor = captureScrollAnchor();
+            scheduleScroll(() -> {
+                if (wasAtBottom) {
+                    scrollPane.setVvalue(1.0);
+                } else {
+                    restoreScrollAnchor(anchor);
+                }
+            });
         });
         Platform.runLater(userInput::requestFocus);
     }
@@ -54,14 +74,15 @@ public class MainWindow {
      */
     public void setSerina(Serina serina) {
         this.serina = Objects.requireNonNull(serina);
-        appendSerinaDialog(serina.getGreeting());
-        for (String message : serina.getStartupMessages()) {
-            appendSerinaDialog(message);
+        appendSerinaDialog(ResponseMessage.normal(serina.getGreeting()));
+        for (ResponseMessage response : serina.getStartupResponses()) {
+            appendSerinaDialog(response);
         }
+        scheduleScroll(() -> scrollPane.setVvalue(0.0));
     }
 
     /**
-     * Sends the current input to Serina and appends the resulting dialog boxes.
+     * Sends the current input to Serina.
      */
     @FXML
     private void handleUserInput() {
@@ -72,42 +93,189 @@ public class MainWindow {
             return;
         }
 
-        appendUserDialog(input);
         userInput.clear();
+        submitCommand(input);
+    }
 
+    /**
+     * Shows Serina's help response while preserving unfinished input.
+     */
+    @FXML
+    private void handleHelp() {
+        String draft = userInput.getText();
+        int caretPosition = userInput.getCaretPosition();
+
+        submitCommand("help");
+
+        userInput.setText(draft);
+        userInput.positionCaret(Math.min(caretPosition, draft.length()));
+        if (!userInput.isDisabled()) {
+            userInput.requestFocus();
+        }
+    }
+
+    /**
+     * Processes one command and displays its command-and-response group.
+     */
+    private void submitCommand(String input) {
+        appendUserDialog(input);
         CommandResult result = serina.executeCommand(input);
-        for (String response : result.getResponses()) {
-            appendSerinaDialog(response);
+
+        List<DialogBox> responseDialogs = result.getMessages().stream()
+                .map(this::appendSerinaDialog)
+                .toList();
+        if (!responseDialogs.isEmpty()) {
+            scheduleResponseScroll(responseDialogs.get(0), responseDialogs.get(responseDialogs.size() - 1));
         }
 
         if (result.shouldExit()) {
             userInput.setDisable(true);
             sendButton.setDisable(true);
+            helpButton.setDisable(true);
         } else {
             userInput.requestFocus();
         }
     }
 
     /**
-     * Appends a message entered by the user.
+     * Appends a command entered by the user.
      */
     private void appendUserDialog(String message) {
-        dialogContainer.getChildren().add(DialogBox.createUserDialog(message, USER_IMAGE));
+        DialogBox dialogBox = DialogBox.createUserDialog(message);
+        if (!dialogContainer.getChildren().isEmpty()) {
+            VBox.setMargin(dialogBox, new Insets(COMMAND_GROUP_MARGIN, 0, 0, 0));
+        }
+        dialogContainer.getChildren().add(dialogBox);
     }
 
     /**
-     * Appends a response generated by Serina.
+     * Appends a typed response generated by Serina.
+     *
+     * @return Dialog box that was appended.
      */
-    private void appendSerinaDialog(String message) {
-        dialogContainer.getChildren().add(DialogBox.createSerinaDialog(message, SERINA_IMAGE));
+    private DialogBox appendSerinaDialog(ResponseMessage message) {
+        DialogBox dialogBox = DialogBox.createSerinaDialog(message);
+        dialogContainer.getChildren().add(dialogBox);
+        return dialogBox;
     }
 
     /**
-     * Loads an image packaged with the application.
+     * Schedules scrolling that reveals a complete response group when possible.
      */
-    private static Image loadImage(String resourcePath) {
-        return new Image(Objects.requireNonNull(
-                MainWindow.class.getResourceAsStream(resourcePath),
-                "Image resource is missing: " + resourcePath));
+    private void scheduleResponseScroll(DialogBox firstResponse, DialogBox lastResponse) {
+        isCommandScrollPending = true;
+        scheduleScroll(() -> {
+            double viewportHeight = scrollPane.getViewportBounds().getHeight();
+            Bounds firstBounds = firstResponse.getBoundsInParent();
+            Bounds lastBounds = lastResponse.getBoundsInParent();
+            double groupTop = firstBounds.getMinY();
+            double groupBottom = lastBounds.getMaxY();
+            double currentTop = getVisibleTop();
+
+            if (groupBottom - groupTop > viewportHeight) {
+                setVisibleTop(groupTop);
+            } else if (groupTop < currentTop) {
+                setVisibleTop(groupTop);
+            } else if (groupBottom > currentTop + viewportHeight) {
+                setVisibleTop(groupBottom - viewportHeight);
+            }
+            isCommandScrollPending = false;
+        });
+    }
+
+    /**
+     * Runs one current scroll request after JavaFX has laid out newly added content.
+     */
+    private void scheduleScroll(Runnable scrollAction) {
+        long requestVersion = ++scheduledScrollVersion;
+        Platform.runLater(() -> {
+            if (requestVersion != scheduledScrollVersion) {
+                return;
+            }
+            dialogContainer.applyCss();
+            dialogContainer.layout();
+            scrollAction.run();
+        });
+    }
+
+    /**
+     * Captures the top visible message and offset before resize-driven text reflow.
+     */
+    private ScrollAnchor captureScrollAnchor() {
+        double visibleTop = getVisibleTop();
+        for (Node child : dialogContainer.getChildren()) {
+            Bounds childBounds = child.getBoundsInParent();
+            if (childBounds.getMaxY() >= visibleTop) {
+                return new ScrollAnchor(child, visibleTop - childBounds.getMinY());
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Restores a previously captured visible message and offset after resize.
+     */
+    private void restoreScrollAnchor(ScrollAnchor anchor) {
+        if (anchor == null || !dialogContainer.getChildren().contains(anchor.node)) {
+            return;
+        }
+        setVisibleTop(anchor.node.getBoundsInParent().getMinY() + anchor.offset);
+    }
+
+    /**
+     * Returns whether the transcript is currently at its bottom edge.
+     */
+    private boolean isScrolledToBottom() {
+        return scrollPane.getVvalue() >= scrollPane.getVmax() - BOTTOM_TOLERANCE;
+    }
+
+    /**
+     * Returns the vertical content coordinate at the top of the viewport.
+     */
+    private double getVisibleTop() {
+        double scrollableHeight = getScrollableHeight();
+        if (scrollableHeight <= 0) {
+            return 0;
+        }
+        double scrollFraction = (scrollPane.getVvalue() - scrollPane.getVmin())
+                / (scrollPane.getVmax() - scrollPane.getVmin());
+        return scrollFraction * scrollableHeight;
+    }
+
+    /**
+     * Scrolls to the supplied vertical content coordinate.
+     */
+    private void setVisibleTop(double visibleTop) {
+        double scrollableHeight = getScrollableHeight();
+        if (scrollableHeight <= 0) {
+            scrollPane.setVvalue(scrollPane.getVmin());
+            return;
+        }
+
+        double clampedTop = Math.max(0, Math.min(visibleTop, scrollableHeight));
+        double scrollFraction = clampedTop / scrollableHeight;
+        double valueRange = scrollPane.getVmax() - scrollPane.getVmin();
+        scrollPane.setVvalue(scrollPane.getVmin() + scrollFraction * valueRange);
+    }
+
+    /**
+     * Returns the distance through which the transcript can be scrolled.
+     */
+    private double getScrollableHeight() {
+        double contentHeight = dialogContainer.getBoundsInLocal().getHeight();
+        return Math.max(0, contentHeight - scrollPane.getViewportBounds().getHeight());
+    }
+
+    /**
+     * Identifies the content node kept at the viewport top while the window resizes.
+     */
+    private static final class ScrollAnchor {
+        private final Node node;
+        private final double offset;
+
+        private ScrollAnchor(Node node, double offset) {
+            this.node = node;
+            this.offset = offset;
+        }
     }
 }
