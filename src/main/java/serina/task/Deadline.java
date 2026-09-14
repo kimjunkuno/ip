@@ -40,8 +40,13 @@ public class Deadline extends Task {
      * @return {@link TaskType#DEADLINE}.
      */
     @Override
-    protected TaskType getTaskType() {
+    public TaskType getTaskType() {
         return TaskType.DEADLINE;
+    }
+
+    @Override
+    public Task copy() {
+        return new Deadline(getDescription(), deadlineDate, getStatus());
     }
 
     /**

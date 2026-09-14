@@ -309,6 +309,8 @@ Files changed:
 - `src/main/java/serina/task/TaskList.java`
 - `src/main/java/serina/ui/Ui.java`
 - `src/test/java/serina/task/TaskListTest.java`
+- `docs/README.md`
+- `tests/test-plan.md`
 - `AI.md`
 - `test-ui.md`
 
@@ -586,4 +588,60 @@ Files changed:
 - `src/test/java/serina/SerinaTest.java`
 - `tests/test-plan.md`
 - `docs/README.md`
+- `AI.md`
+
+## Level A-MoreErrorHandling
+
+Instruction:
+
+Improve Serina so anticipated command, environment, and data errors are handled safely and explained to the
+user.
+
+What Codex did:
+
+- Added a dedicated command parser that accepts harmless surrounding or repeated whitespace while validating
+  required arguments, task numbers, parameter order, repeated date parameters, and unsupported extra arguments.
+- Added strict `yyyy-MM-dd` calendar validation, including rejection of impossible dates and event end dates that
+  are equal to or earlier than their start dates.
+- Rejected descriptions containing control characters that would make task records unsafe to store.
+- Added duplicate detection based on task type, normalized description, and dates while ignoring completion status.
+- Made the 100-task limit recoverable so the user can delete a task and continue using Serina.
+- Made repeated mark and unmark commands harmless no-ops with clear responses.
+- Changed mutating commands to operate on deep copies and publish them only after saving succeeds, preserving the
+  active task list when persistence fails.
+- Changed storage writes to use a temporary file and atomic replacement so an interrupted write does not truncate
+  the existing save file.
+- Added validation for non-file save paths, duplicate saved records, malformed records with line-number context,
+  and save files containing invalid date ranges.
+- Prevented a failed load from becoming an empty writable session that could overwrite damaged or inaccessible
+  data; Help and exit remain available while task-data commands explain how to recover.
+- Kept invalid GUI input in the command field so the user can correct it without typing the command again.
+- Made decorative images optional and gave missing essential FXML or CSS resources a clear startup failure.
+- Added focused parser, date, storage, command, and rollback regression tests.
+
+Files changed:
+
+- `src/main/java/serina/Serina.java`
+- `src/main/java/serina/ResponseFormatter.java`
+- `src/main/java/serina/exception/SerinaError.java`
+- `src/main/java/serina/exception/SerinaException.java`
+- `src/main/java/serina/gui/MainWindow.java`
+- `src/main/java/serina/gui/Main.java`
+- `src/main/java/serina/parser/CommandParser.java`
+- `src/main/java/serina/parser/CommandType.java`
+- `src/main/java/serina/parser/DateParser.java`
+- `src/main/java/serina/parser/ParsedCommand.java`
+- `src/main/java/serina/storage/Storage.java`
+- `src/main/java/serina/task/Deadline.java`
+- `src/main/java/serina/task/Event.java`
+- `src/main/java/serina/task/Task.java`
+- `src/main/java/serina/task/TaskList.java`
+- `src/main/java/serina/task/Todo.java`
+- `src/test/java/serina/SerinaTest.java`
+- `src/test/java/serina/parser/CommandParserTest.java`
+- `src/test/java/serina/parser/DateParserTest.java`
+- `src/test/java/serina/storage/StorageTest.java`
+- `src/test/java/serina/task/TaskListTest.java`
+- `docs/README.md`
+- `tests/test-plan.md`
 - `AI.md`

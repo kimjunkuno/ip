@@ -29,7 +29,12 @@ public class Todo extends Task {
      * @return {@link TaskType#TODO}.
      */
     @Override
-    protected TaskType getTaskType() {
+    public TaskType getTaskType() {
         return TaskType.TODO;
+    }
+
+    @Override
+    public Task copy() {
+        return new Todo(getDescription(), getStatus());
     }
 }

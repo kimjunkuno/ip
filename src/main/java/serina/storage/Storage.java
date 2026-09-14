@@ -3,6 +3,7 @@ package serina.storage;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -66,17 +67,30 @@ public class Storage {
             if (!Files.exists(filePath)) {
                 return new ArrayList<>();
             }
+            if (!Files.isRegularFile(filePath)) {
+                throw new SerinaException(SerinaError.LOAD_FAILED, "The save location is not a regular file.");
+            }
 
             List<Task> tasks = new ArrayList<>();
             List<String> lines = Files.readAllLines(filePath);
-            for (String line : lines) {
+            for (int lineIndex = 0; lineIndex < lines.size(); lineIndex++) {
+                String line = lines.get(lineIndex);
                 if (line.trim().isEmpty()) {
                     continue;
                 }
                 if (tasks.size() >= MAX_TASKS) {
                     throw new SerinaException(SerinaError.LOAD_TOO_MANY_TASKS);
                 }
-                Task task = parseTask(line);
+                Task task;
+                try {
+                    task = parseTask(line);
+                    if (tasks.stream().anyMatch(existingTask -> existingTask.hasSameIdentity(task))) {
+                        throw new SerinaException(SerinaError.LOAD_FAILED, "A duplicate task was found.");
+                    }
+                } catch (SerinaException e) {
+                    throw new SerinaException(SerinaError.LOAD_FAILED,
+                            "Invalid record on line " + (lineIndex + 1) + ".");
+                }
                 assert task != null : "Non-empty save-file lines should parse into tasks or throw.";
 
                 tasks.add(task);
@@ -84,7 +98,7 @@ public class Storage {
             }
             return tasks;
         } catch (IOException | SecurityException e) {
-            throw new SerinaException(SerinaError.LOAD_FAILED);
+            throw new SerinaException(SerinaError.LOAD_FAILED, e);
         }
     }
 
@@ -97,14 +111,26 @@ public class Storage {
     public void saveTasks(List<Task> tasks) throws SerinaException {
         assert tasks != null : "Storage should save task lists supplied by Serina.";
 
+        Path temporaryFile = null;
         try {
             Path parentDirectory = filePath.getParent();
             if (parentDirectory != null) {
                 Files.createDirectories(parentDirectory);
             }
-            Files.write(filePath, toFileLines(tasks));
+            Path temporaryDirectory = parentDirectory == null ? Path.of(".") : parentDirectory;
+            temporaryFile = Files.createTempFile(temporaryDirectory, "serina-", ".tmp");
+            Files.write(temporaryFile, toFileLines(tasks));
+            Files.move(temporaryFile, filePath, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException | SecurityException e) {
-            throw new SerinaException(SerinaError.SAVE_FAILED);
+            throw new SerinaException(SerinaError.SAVE_FAILED, e);
+        } finally {
+            if (temporaryFile != null) {
+                try {
+                    Files.deleteIfExists(temporaryFile);
+                } catch (IOException | SecurityException ignored) {
+                    // The original save error remains the useful failure to report.
+                }
+            }
         }
     }
 
@@ -115,7 +141,7 @@ public class Storage {
      * @return One serialized line for each task.
      */
     private static List<String> toFileLines(List<Task> tasks) {
-        assert !tasks.contains(null) : "Only real tasks should be serialized.";
+        assert tasks.stream().noneMatch(task -> task == null) : "Only real tasks should be serialized.";
 
         List<String> lines = tasks.stream()
                 .map(Task::toFileString)
@@ -216,11 +242,11 @@ public class Storage {
             throws SerinaException {
         LocalDate startDate = DateParser.parseFileDate(startDateText);
         LocalDate endDate = DateParser.parseFileDate(endDateText);
-        if (endDate.isBefore(startDate)) {
+        if (!endDate.isAfter(startDate)) {
             throw new SerinaException(SerinaError.LOAD_FAILED);
         }
 
-        assert !endDate.isBefore(startDate) : "Loaded events should be chronological before task construction.";
+        assert endDate.isAfter(startDate) : "Loaded event end dates should be after start dates.";
         return new Event(description, startDate, endDate, status);
     }
 

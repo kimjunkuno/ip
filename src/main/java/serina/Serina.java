@@ -5,7 +5,10 @@ import java.util.List;
 
 import serina.exception.SerinaError;
 import serina.exception.SerinaException;
+import serina.parser.CommandParser;
+import serina.parser.CommandType;
 import serina.parser.DateParser;
+import serina.parser.ParsedCommand;
 import serina.storage.Storage;
 import serina.task.Deadline;
 import serina.task.Event;
@@ -14,32 +17,14 @@ import serina.task.TaskList;
 import serina.task.Todo;
 import serina.ui.Ui;
 
-/**
- * Processes Serina commands for console and graphical user interfaces.
- */
+/** Processes Serina commands for console and graphical user interfaces. */
 public class Serina {
-    private static final String COMMAND_ARGUMENT_SEPARATOR = " ";
-    private static final String COMMAND_BYE = "bye";
-    private static final String COMMAND_HELP = "help";
-    private static final String COMMAND_LIST = "list";
-    private static final String COMMAND_MARK = "mark";
-    private static final String COMMAND_UNMARK = "unmark";
-    private static final String COMMAND_DELETE = "delete";
-    private static final String COMMAND_FIND = "find";
-    private static final String COMMAND_TODO = "todo";
-    private static final String COMMAND_DEADLINE = "deadline";
-    private static final String COMMAND_EVENT = "event";
-    private static final String DEADLINE_DATE_SEPARATOR = "/by";
-    private static final String EVENT_START_SEPARATOR = "/from";
-    private static final String EVENT_END_SEPARATOR = "/to";
-
     private final Storage storage;
     private final TaskList tasks;
     private final List<ResponseMessage> startupResponses;
+    private final boolean isStorageAvailable;
 
-    /**
-     * Creates Serina using the default save-file location.
-     */
+    /** Creates Serina using the default save-file location. */
     public Serina() {
         this(new Storage());
     }
@@ -51,19 +36,21 @@ public class Serina {
      */
     public Serina(Storage storage) {
         this.storage = storage;
-
         TaskList loadedTasks;
         List<ResponseMessage> loadingResponses;
+        boolean canUseStorage;
         try {
             loadedTasks = new TaskList(storage.loadTasks());
             loadingResponses = List.of();
+            canUseStorage = true;
         } catch (SerinaException e) {
             loadedTasks = new TaskList();
             loadingResponses = List.of(ResponseMessage.warning(e.getMessage()));
+            canUseStorage = false;
         }
-
         tasks = loadedTasks;
         startupResponses = loadingResponses;
+        isStorageAvailable = canUseStorage;
     }
 
     /**
@@ -73,18 +60,12 @@ public class Serina {
      */
     public static void main(String[] args) {
         Serina serina = new Serina();
-
         try (Ui ui = new Ui()) {
             ui.showMessage(serina.getGreeting());
-            for (String message : serina.getStartupMessages()) {
-                ui.showMessage(message);
-            }
-
+            serina.getStartupMessages().forEach(ui::showMessage);
             while (ui.hasNextCommand()) {
                 CommandResult result = serina.executeCommand(ui.readCommand());
-                for (String response : result.getResponses()) {
-                    ui.showMessage(response);
-                }
+                result.getResponses().forEach(ui::showMessage);
                 if (result.shouldExit()) {
                     break;
                 }
@@ -107,9 +88,7 @@ public class Serina {
      * @return Loading warnings in display order.
      */
     public List<String> getStartupMessages() {
-        return startupResponses.stream()
-                .map(ResponseMessage::getText)
-                .toList();
+        return startupResponses.stream().map(ResponseMessage::getText).toList();
     }
 
     /**
@@ -128,233 +107,92 @@ public class Serina {
      * @return Responses and exit behavior produced by the command.
      */
     public CommandResult executeCommand(String input) {
-        assert input != null : "Commands should come from the UI as non-null text.";
-
-        String command = input.trim();
-        if (command.equals(COMMAND_BYE)) {
-            return new CommandResult(true, ResponseFormatter.formatGoodbye());
-        }
-
         try {
-            String response = processCommand(command);
-            return new CommandResult(false, response);
-        } catch (SerinaException e) {
-            if (e.shouldExit()) {
-                return CommandResult.ofMessages(true,
-                        ResponseMessage.error(e.getMessage()),
-                        ResponseMessage.normal(ResponseFormatter.formatGoodbye()));
+            ParsedCommand command = CommandParser.parse(input);
+            if (command.type() == CommandType.BYE) {
+                return new CommandResult(true, ResponseFormatter.formatGoodbye());
             }
+            return new CommandResult(false, processCommand(command));
+        } catch (SerinaException e) {
             return CommandResult.ofMessages(false, ResponseMessage.error(e.getMessage()));
         }
     }
 
-    /**
-     * Executes a command that does not directly end the conversation.
-     */
-    private String processCommand(String input) throws SerinaException {
-        assert input.equals(input.trim()) : "Commands should be trimmed before they are dispatched.";
-
-        if (input.equals(COMMAND_HELP)) {
-            return ResponseFormatter.formatHelp();
+    private String processCommand(ParsedCommand command) throws SerinaException {
+        if (!isStorageAvailable && command.type() != CommandType.HELP) {
+            throw new SerinaException(SerinaError.STORAGE_UNAVAILABLE);
         }
-        if (input.equals(COMMAND_LIST)) {
-            return ResponseFormatter.formatTaskList(tasks.asList());
-        }
-        if (isCommand(input, COMMAND_MARK)) {
-            return markTask(input);
-        }
-        if (isCommand(input, COMMAND_UNMARK)) {
-            return unmarkTask(input);
-        }
-        if (isCommand(input, COMMAND_DELETE)) {
-            return deleteTask(input);
-        }
-        if (isCommand(input, COMMAND_FIND)) {
-            return findTasks(input);
-        }
-
-        return addTask(input);
+        return switch (command.type()) {
+            case HELP -> ResponseFormatter.formatHelp();
+            case LIST -> ResponseFormatter.formatTaskList(tasks.asList());
+            case MARK -> markTask(command.arguments().get(0));
+            case UNMARK -> unmarkTask(command.arguments().get(0));
+            case DELETE -> deleteTask(command.arguments().get(0));
+            case FIND -> ResponseFormatter.formatMatchingTasks(tasks.find(command.arguments().get(0)));
+            case TODO, DEADLINE, EVENT -> addTask(createTask(command));
+            case BYE -> throw new IllegalStateException("Bye should be handled before command dispatch.");
+        };
     }
 
-    /**
-     * Marks a selected task as done and saves the updated task list.
-     */
-    private String markTask(String input) throws SerinaException {
-        Task task = tasks.getTask(getCommandArguments(input, COMMAND_MARK));
+    private String markTask(String taskNumber) throws SerinaException {
+        Task currentTask = tasks.getTask(taskNumber);
+        if (currentTask.isDone()) {
+            return ResponseFormatter.formatAlreadyMarkedTask(currentTask);
+        }
+        TaskList candidate = tasks.copy();
+        Task task = candidate.getTask(taskNumber);
         task.markAsDone();
-        storage.saveTasks(tasks.asList());
+        saveAndPublish(candidate);
         return ResponseFormatter.formatMarkedTask(task);
     }
 
-    /**
-     * Marks a selected task as not done and saves the updated task list.
-     */
-    private String unmarkTask(String input) throws SerinaException {
-        Task task = tasks.getTask(getCommandArguments(input, COMMAND_UNMARK));
+    private String unmarkTask(String taskNumber) throws SerinaException {
+        Task currentTask = tasks.getTask(taskNumber);
+        if (!currentTask.isDone()) {
+            return ResponseFormatter.formatAlreadyUnmarkedTask(currentTask);
+        }
+        TaskList candidate = tasks.copy();
+        Task task = candidate.getTask(taskNumber);
         task.markAsNotDone();
-        storage.saveTasks(tasks.asList());
+        saveAndPublish(candidate);
         return ResponseFormatter.formatUnmarkedTask(task);
     }
 
-    /**
-     * Deletes a selected task and saves the updated task list.
-     */
-    private String deleteTask(String input) throws SerinaException {
-        Task task = tasks.delete(getCommandArguments(input, COMMAND_DELETE));
-        storage.saveTasks(tasks.asList());
-        return ResponseFormatter.formatDeletedTask(task, tasks.size());
+    private String deleteTask(String taskNumber) throws SerinaException {
+        TaskList candidate = tasks.copy();
+        Task task = candidate.delete(taskNumber);
+        saveAndPublish(candidate);
+        return ResponseFormatter.formatDeletedTask(task, candidate.size());
     }
 
-    /**
-     * Finds tasks whose descriptions contain the parsed keyword.
-     */
-    private String findTasks(String input) throws SerinaException {
-        String keyword = parseFindKeyword(getCommandArguments(input, COMMAND_FIND));
-        assert !keyword.isBlank() : "Find keywords should be validated before searching.";
-        return ResponseFormatter.formatMatchingTasks(tasks.find(keyword));
+    private String addTask(Task task) throws SerinaException {
+        TaskList candidate = tasks.copy();
+        candidate.add(task);
+        saveAndPublish(candidate);
+        return ResponseFormatter.formatAddedTask(task, candidate.size());
     }
 
-    /**
-     * Creates a new task and saves the updated task list.
-     */
-    private String addTask(String input) throws SerinaException {
-        Task task = createTask(input);
-        assert task != null : "Task creation should return a task or throw a SerinaException.";
-        tasks.add(task);
-        storage.saveTasks(tasks.asList());
-        return ResponseFormatter.formatAddedTask(task, tasks.size());
+    private static Task createTask(ParsedCommand command) throws SerinaException {
+        List<String> arguments = command.arguments();
+        return switch (command.type()) {
+            case TODO -> new Todo(arguments.get(0));
+            case DEADLINE -> new Deadline(arguments.get(0), DateParser.parseInputDate(arguments.get(1)));
+            case EVENT -> createEvent(arguments);
+            default -> throw new IllegalArgumentException("Command does not create a task: " + command.type());
+        };
     }
 
-    /**
-     * Creates the correct task type from the user's command.
-     *
-     * @throws SerinaException If the command is unknown or missing required fields.
-     */
-    private static Task createTask(String input) throws SerinaException {
-        if (isCommand(input, COMMAND_TODO)) {
-            return createTodo(getCommandArguments(input, COMMAND_TODO));
-        }
-
-        if (isCommand(input, COMMAND_DEADLINE)) {
-            return createDeadline(getCommandArguments(input, COMMAND_DEADLINE));
-        }
-
-        if (isCommand(input, COMMAND_EVENT)) {
-            return createEvent(getCommandArguments(input, COMMAND_EVENT));
-        }
-
-        throw new SerinaException(SerinaError.UNKNOWN_COMMAND);
-    }
-
-    /**
-     * Creates a todo task from the user's command text.
-     */
-    private static Todo createTodo(String input) throws SerinaException {
-        String description = input.trim();
-        if (description.isEmpty()) {
-            throw new SerinaException(SerinaError.EMPTY_TODO);
-        }
-
-        assert !description.isBlank() : "Todo descriptions should be validated before task construction.";
-        return new Todo(description);
-    }
-
-    /**
-     * Creates a deadline task from text in the format {@code <task> /by <date>}.
-     */
-    private static Deadline createDeadline(String input) throws SerinaException {
-        String commandText = input.trim();
-        int byIndex = commandText.indexOf(DEADLINE_DATE_SEPARATOR);
-        if (byIndex == -1) {
-            throw new SerinaException(SerinaError.INVALID_DEADLINE_FORMAT);
-        }
-        assert byIndex >= 0 : "Deadline commands should be sliced only after /by is found.";
-
-        String description = commandText.substring(0, byIndex).trim();
-        String deadlineDateText = commandText.substring(byIndex + DEADLINE_DATE_SEPARATOR.length()).trim();
-        if (description.isEmpty()) {
-            throw new SerinaException(SerinaError.EMPTY_DEADLINE_DESCRIPTION);
-        }
-        if (deadlineDateText.isEmpty()) {
-            throw new SerinaException(SerinaError.EMPTY_DEADLINE_BY);
-        }
-
-        LocalDate deadlineDate = DateParser.parseInputDate(deadlineDateText);
-        assert !description.isBlank() : "Deadline descriptions should be validated before task construction.";
-        assert !deadlineDateText.isBlank() : "Deadline dates should be validated before date parsing.";
-        assert deadlineDate != null : "Date parsing should return a deadline date or throw a SerinaException.";
-        return new Deadline(description, deadlineDate);
-    }
-
-    /**
-     * Creates an event task from text in the format {@code <task> /from <start date> /to <end date>}.
-     */
-    private static Event createEvent(String input) throws SerinaException {
-        String commandText = input.trim();
-        int fromIndex = commandText.indexOf(EVENT_START_SEPARATOR);
-        int toIndex = commandText.indexOf(EVENT_END_SEPARATOR);
-        if (fromIndex == -1 || toIndex == -1 || toIndex < fromIndex) {
-            throw new SerinaException(SerinaError.INVALID_EVENT_FORMAT);
-        }
-        assert fromIndex >= 0 && toIndex > fromIndex
-                : "Event commands should be sliced only after /from and /to are found in order.";
-
-        String description = commandText.substring(0, fromIndex).trim();
-        String startDateText = commandText.substring(fromIndex + EVENT_START_SEPARATOR.length(), toIndex).trim();
-        String endDateText = commandText.substring(toIndex + EVENT_END_SEPARATOR.length()).trim();
-        if (description.isEmpty()) {
-            throw new SerinaException(SerinaError.EMPTY_EVENT_DESCRIPTION);
-        }
-        if (startDateText.isEmpty()) {
-            throw new SerinaException(SerinaError.EMPTY_EVENT_FROM);
-        }
-        if (endDateText.isEmpty()) {
-            throw new SerinaException(SerinaError.EMPTY_EVENT_TO);
-        }
-
-        LocalDate startDate = DateParser.parseInputDate(startDateText);
-        LocalDate endDate = DateParser.parseInputDate(endDateText);
-        assert !description.isBlank() : "Event descriptions should be validated before task construction.";
-        assert !startDateText.isBlank() : "Event start dates should be validated before date parsing.";
-        assert !endDateText.isBlank() : "Event end dates should be validated before date parsing.";
-        if (endDate.isBefore(startDate)) {
+    private static Event createEvent(List<String> arguments) throws SerinaException {
+        LocalDate startDate = DateParser.parseInputDate(arguments.get(1));
+        LocalDate endDate = DateParser.parseInputDate(arguments.get(2));
+        if (!endDate.isAfter(startDate)) {
             throw new SerinaException(SerinaError.INVALID_EVENT_DATE_RANGE);
         }
-
-        assert !endDate.isBefore(startDate) : "Events should be chronological before task construction.";
-        return new Event(description, startDate, endDate);
+        return new Event(arguments.get(0), startDate, endDate);
     }
 
-    /**
-     * Returns the keyword entered in a find command.
-     *
-     * @param keywordText Keyword text from the user command.
-     * @return The trimmed keyword.
-     * @throws SerinaException If the keyword is empty.
-     */
-    private static String parseFindKeyword(String keywordText) throws SerinaException {
-        String keyword = keywordText.trim();
-        if (keyword.isEmpty()) {
-            throw new SerinaException(SerinaError.EMPTY_FIND_KEYWORD);
-        }
-
-        assert !keyword.isBlank() : "Find keyword parsing should reject blank keywords.";
-        return keyword;
-    }
-
-    /**
-     * Returns whether the input is exactly the command word or starts with that command followed by arguments.
-     */
-    private static boolean isCommand(String input, String commandWord) {
-        return input.equals(commandWord) || input.startsWith(commandWord + COMMAND_ARGUMENT_SEPARATOR);
-    }
-
-    /**
-     * Returns the text after the command word.
-     */
-    private static String getCommandArguments(String input, String commandWord) {
-        assert isCommand(input, commandWord) : "Command arguments should be extracted only from matching commands.";
-
-        return input.substring(commandWord.length());
+    private void saveAndPublish(TaskList candidate) throws SerinaException {
+        storage.saveTasks(candidate.asList());
+        tasks.replaceWith(candidate);
     }
 }
