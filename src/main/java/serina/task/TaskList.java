@@ -56,6 +56,11 @@ public class TaskList {
         if (tasks.size() >= MAX_TASKS) {
             throw new SerinaException(SerinaError.MAX_TASKS);
         }
+        int duplicateIndex = indexOfDuplicate(task);
+        if (duplicateIndex >= 0) {
+            throw new SerinaException(SerinaError.DUPLICATE_TASK,
+                    "It matches task " + (duplicateIndex + 1) + ".");
+        }
 
         int taskCountBeforeAdd = tasks.size();
         assert task != null : "Only successfully created tasks should be added.";
@@ -135,6 +140,28 @@ public class TaskList {
     }
 
     /**
+     * Replaces all tasks with independent copies of a validated candidate list.
+     *
+     * @param replacement Validated replacement list.
+     */
+    public void replaceWith(TaskList replacement) {
+        tasks.clear();
+        replacement.tasks.stream().map(Task::copy).forEach(tasks::add);
+    }
+
+    /**
+     * Returns an independent copy that can be changed before saving.
+     *
+     * @return Deep copy of this task list.
+     */
+    public TaskList copy() {
+        List<Task> copiedTasks = tasks.stream()
+                .map(Task::copy)
+                .collect(Collectors.toCollection(ArrayList::new));
+        return new TaskList(copiedTasks);
+    }
+
+    /**
      * Converts a one-based user task number into a valid zero-based list index.
      *
      * @param taskNumberText Task number entered by the user.
@@ -155,5 +182,14 @@ public class TaskList {
         } catch (NumberFormatException e) {
             throw new SerinaException(SerinaError.INVALID_TASK_NUMBER);
         }
+    }
+
+    private int indexOfDuplicate(Task candidate) {
+        for (int i = 0; i < tasks.size(); i++) {
+            if (tasks.get(i).hasSameIdentity(candidate)) {
+                return i;
+            }
+        }
+        return -1;
     }
 }

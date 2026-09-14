@@ -21,6 +21,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import serina.CommandResult;
 import serina.ResponseMessage;
+import serina.ResponseType;
 import serina.Serina;
 
 /**
@@ -111,6 +112,11 @@ public class MainWindow {
      */
     private static void configurePortrait(ImageView imageView, String resourcePath, double portraitSize) {
         Image image = loadImage(resourcePath);
+        if (image == null) {
+            imageView.setManaged(false);
+            imageView.setVisible(false);
+            return;
+        }
         imageView.setImage(image);
         imageView.setViewport(createSquareViewport(image));
         imageView.setClip(new Circle(portraitSize / 2, portraitSize / 2, portraitSize / 2));
@@ -142,13 +148,10 @@ public class MainWindow {
         node.setManaged(isVisible);
     }
 
-    /**
-     * Loads an image packaged with the application.
-     */
+    /** Returns an optional image resource, or {@code null} when decorative artwork is unavailable. */
     private static Image loadImage(String resourcePath) {
-        return new Image(Objects.requireNonNull(
-                MainWindow.class.getResourceAsStream(resourcePath),
-                "Image resource is missing: " + resourcePath));
+        java.net.URL resource = MainWindow.class.getResource(resourcePath);
+        return resource == null ? null : new Image(resource.toExternalForm());
     }
 
     /**
@@ -170,15 +173,22 @@ public class MainWindow {
      */
     @FXML
     private void handleUserInput() {
-        String input = userInput.getText().trim();
-        if (input.isEmpty()) {
+        String input = userInput.getText();
+        if (input.isBlank()) {
             userInput.clear();
             userInput.requestFocus();
             return;
         }
 
-        userInput.clear();
-        submitCommand(input);
+        CommandResult result = submitCommand(input);
+        boolean hasError = result.getMessages().stream()
+                .anyMatch(message -> message.getType() == ResponseType.ERROR);
+        if (hasError) {
+            userInput.setText(input);
+            userInput.positionCaret(input.length());
+        } else {
+            userInput.clear();
+        }
     }
 
     /**
@@ -201,7 +211,7 @@ public class MainWindow {
     /**
      * Processes one command and displays its command-and-response group.
      */
-    private void submitCommand(String input) {
+    private CommandResult submitCommand(String input) {
         appendUserDialog(input);
         CommandResult result = serina.executeCommand(input);
 
@@ -219,6 +229,7 @@ public class MainWindow {
         } else {
             userInput.requestFocus();
         }
+        return result;
     }
 
     /**

@@ -74,6 +74,9 @@ public final class DateParser {
         assert error != null : "Date parsing should map failures to a Serina error.";
 
         try {
+            if (!dateText.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                throw new DateTimeParseException("Date must use four-digit ISO fields", dateText, 0);
+            }
             return LocalDate.parse(dateText, INPUT_FORMATTER);
         } catch (DateTimeParseException e) {
             throw new SerinaException(error);

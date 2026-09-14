@@ -18,6 +18,28 @@ public class SerinaException extends Exception {
     }
 
     /**
+     * Creates a Serina-specific exception with additional user-facing context.
+     *
+     * @param error Error category.
+     * @param details Details appended to the standard message.
+     */
+    public SerinaException(SerinaError error, String details) {
+        super(error.getMessage() + " " + details);
+        this.error = error;
+    }
+
+    /**
+     * Creates a Serina-specific exception that retains its technical cause.
+     *
+     * @param error Error category.
+     * @param cause Underlying failure.
+     */
+    public SerinaException(SerinaError error, Throwable cause) {
+        super(error.getMessage(), cause);
+        this.error = error;
+    }
+
+    /**
      * Returns whether Serina should exit after this exception is shown.
      *
      * @return {@code true} if this exception should end the application.

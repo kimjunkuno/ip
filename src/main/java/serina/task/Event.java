@@ -34,7 +34,7 @@ public class Event extends Task {
         super(description, status);
         assert startDate != null : "Event start dates should be parsed before event construction.";
         assert endDate != null : "Event end dates should be parsed before event construction.";
-        assert !endDate.isBefore(startDate) : "Event end dates should not be before start dates.";
+        assert endDate.isAfter(startDate) : "Event end dates should be after start dates.";
 
         this.startDate = startDate;
         this.endDate = endDate;
@@ -46,8 +46,13 @@ public class Event extends Task {
      * @return {@link TaskType#EVENT}.
      */
     @Override
-    protected TaskType getTaskType() {
+    public TaskType getTaskType() {
         return TaskType.EVENT;
+    }
+
+    @Override
+    public Task copy() {
+        return new Event(getDescription(), startDate, endDate, getStatus());
     }
 
     /**

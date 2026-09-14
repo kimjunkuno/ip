@@ -99,6 +99,8 @@ public class MainWindowTest {
             userInput.setText("nonsense");
             Event.fireEvent(userInput, new ActionEvent());
             assertEquals(7, dialogContainer.getChildren().size());
+            assertEquals("nonsense", userInput.getText());
+            assertEquals("nonsense".length(), userInput.getCaretPosition());
 
             userInput.setText("   ");
             sendButton.fire();

@@ -109,17 +109,19 @@ public class SerinaTest {
     }
 
     @Test
-    public void constructor_corruptSaveFile_reportsLoadErrorAndStartsEmpty() throws IOException {
+    public void constructor_corruptSaveFile_reportsLineAndBlocksDataAccess() throws IOException {
         Path saveFile = temporaryDirectory.resolve("serina.txt");
         Files.writeString(saveFile, "invalid save data");
 
         Serina serina = new Serina(new Storage(saveFile));
 
-        assertEquals(List.of("Captain Cutter, I couldn't load your saved tasks."), serina.getStartupMessages());
+        assertEquals(List.of("Captain Cutter, I couldn't load your saved tasks. Invalid record on line 1."),
+                serina.getStartupMessages());
         assertEquals(ResponseType.WARNING, serina.getStartupResponses().get(0).getType());
         assertFalse(serina.getGreeting().contains("all systems normal"));
         assertResponses(serina.executeCommand("list"),
-                "No tasks on the roster, Captain Cutter. An unusually peaceful situation.");
+                "Captain Cutter, saved tasks are unavailable. Repair the data file or its permissions, "
+                        + "then restart Serina.");
     }
 
     @Test
@@ -151,7 +153,7 @@ public class SerinaTest {
     }
 
     @Test
-    public void executeCommand_taskLimitError_returnsErrorThenGoodbye() {
+    public void executeCommand_taskLimitError_keepsApplicationUsable() {
         Serina serina = createSerina();
         for (int taskNumber = 1; taskNumber <= 100; taskNumber++) {
             serina.executeCommand("todo task " + taskNumber);
@@ -160,11 +162,55 @@ public class SerinaTest {
         CommandResult result = serina.executeCommand("todo one task too many");
 
         assertResponses(result,
-                "Captain Cutter, the 100-task limit has been reached.",
-                "Signing off, Captain Cutter. Do try to keep things orderly.");
+                "Captain Cutter, the 100-task limit has been reached. Delete a task before adding another.");
         assertEquals(ResponseType.ERROR, result.getMessages().get(0).getType());
-        assertEquals(ResponseType.NORMAL, result.getMessages().get(1).getType());
-        assertTrue(result.shouldExit());
+        assertFalse(result.shouldExit());
+        assertFalse(serina.executeCommand("delete 1").shouldExit());
+    }
+
+    @Test
+    public void executeCommand_flexibleWhitespaceAndInvalidFormats_handlesWithoutCrashing() {
+        Serina serina = createSerina();
+
+        assertFalse(serina.executeCommand("  todo   inspect engines  ").shouldExit());
+        assertEquals(ResponseType.ERROR, serina.executeCommand("list now").getMessages().get(0).getType());
+        assertEquals(ResponseType.ERROR,
+                serina.executeCommand("deadline report /by 2026-09-20 /by 2026-09-21")
+                        .getMessages().get(0).getType());
+        assertEquals(ResponseType.ERROR,
+                serina.executeCommand("event briefing /from 2026-09-20 /to 2026-09-20")
+                        .getMessages().get(0).getType());
+        assertEquals(ResponseType.ERROR, serina.executeCommand("mark 1 2").getMessages().get(0).getType());
+    }
+
+    @Test
+    public void executeCommand_duplicateTask_rejectsNormalizedDuplicate() {
+        Serina serina = createSerina();
+        serina.executeCommand("todo Inspect engines");
+
+        CommandResult result = serina.executeCommand("todo   inspect   ENGINES");
+
+        assertEquals(ResponseType.ERROR, result.getMessages().get(0).getType());
+        assertTrue(result.getResponses().get(0).contains("task 1"));
+    }
+
+    @Test
+    public void executeCommand_failedSave_doesNotChangeMemoryOrFile() throws IOException {
+        Path saveFile = temporaryDirectory.resolve("serina.txt");
+        Files.writeString(saveFile, "T | 0 | original task\n");
+        Storage failingStorage = new Storage(saveFile) {
+            @Override
+            public void saveTasks(List<serina.task.Task> tasks) throws serina.exception.SerinaException {
+                throw new serina.exception.SerinaException(serina.exception.SerinaError.SAVE_FAILED);
+            }
+        };
+        Serina serina = new Serina(failingStorage);
+
+        CommandResult result = serina.executeCommand("mark 1");
+
+        assertEquals(ResponseType.ERROR, result.getMessages().get(0).getType());
+        assertTrue(serina.executeCommand("list").getResponses().get(0).contains("[T][ ] original task"));
+        assertEquals("T | 0 | original task\n", Files.readString(saveFile));
     }
 
     @Test

@@ -2,7 +2,6 @@ package serina.gui;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Objects;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -30,12 +29,8 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        URL mainWindowResource = Objects.requireNonNull(
-                Main.class.getResource("/view/MainWindow.fxml"),
-                "MainWindow.fxml is missing");
-        URL stylesheetResource = Objects.requireNonNull(
-                Main.class.getResource("/css/main.css"),
-                "main.css is missing");
+        URL mainWindowResource = requireResource("/view/MainWindow.fxml");
+        URL stylesheetResource = requireResource("/css/main.css");
 
         FXMLLoader fxmlLoader = new FXMLLoader(mainWindowResource);
         Parent root = fxmlLoader.load();
@@ -50,5 +45,20 @@ public class Main extends Application {
         stage.setMinWidth(MINIMUM_WIDTH);
         stage.setScene(scene);
         stage.show();
+    }
+
+    /**
+     * Returns an essential packaged resource with a clear startup failure if it is missing.
+     *
+     * @param resourcePath Classpath location of the resource.
+     * @return Located resource URL.
+     * @throws IOException If the application package is incomplete.
+     */
+    private static URL requireResource(String resourcePath) throws IOException {
+        URL resource = Main.class.getResource(resourcePath);
+        if (resource == null) {
+            throw new IOException("Serina cannot start because this resource is missing: " + resourcePath);
+        }
+        return resource;
     }
 }

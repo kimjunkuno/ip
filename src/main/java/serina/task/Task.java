@@ -1,6 +1,7 @@
 package serina.task;
 
 import java.time.LocalDate;
+import java.util.Locale;
 
 /**
  * Represents a task that can be marked as done or not done.
@@ -48,6 +49,15 @@ public abstract class Task {
     }
 
     /**
+     * Returns whether this task is complete.
+     *
+     * @return {@code true} if this task has been marked as done.
+     */
+    public boolean isDone() {
+        return status == TaskStatus.DONE;
+    }
+
+    /**
      * Returns the task text without its status icon.
      *
      * @return The task description.
@@ -80,7 +90,36 @@ public abstract class Task {
      *
      * @return The task type.
      */
-    protected abstract TaskType getTaskType();
+    public abstract TaskType getTaskType();
+
+    /**
+     * Returns an independent copy of this task.
+     *
+     * @return A task with the same content and completion status.
+     */
+    public abstract Task copy();
+
+    /**
+     * Checks whether another task represents the same user-visible work.
+     *
+     * @param other Task to compare.
+     * @return {@code true} if type, normalized description, and dates match.
+     */
+    public boolean hasSameIdentity(Task other) {
+        return other != null
+                && getTaskType() == other.getTaskType()
+                && normalizeDescription(description).equals(normalizeDescription(other.description))
+                && getFileDetails().equals(other.getFileDetails());
+    }
+
+    /**
+     * Returns this task's completion status for copying and persistence.
+     *
+     * @return Current task status.
+     */
+    protected TaskStatus getStatus() {
+        return status;
+    }
 
     /**
      * Returns extra details to display after the task description.
@@ -118,6 +157,10 @@ public abstract class Task {
      */
     protected static String escapeFileField(String field) {
         return field.replace("\\", "\\\\").replace("|", "\\|");
+    }
+
+    private static String normalizeDescription(String value) {
+        return value.strip().replaceAll("\\s+", " ").toLowerCase(Locale.ROOT);
     }
 
     /**

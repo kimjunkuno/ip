@@ -7,10 +7,22 @@ import serina.SerinaDialogue;
  */
 public enum SerinaError {
     /** Indicates that no more tasks can be added. */
-    MAX_TASKS(SerinaDialogue.address("the 100-task limit has been reached."), true),
+    MAX_TASKS(SerinaDialogue.address("the 100-task limit has been reached. Delete a task before adding another."),
+            false),
     /** Indicates that the entered command is not supported. */
     UNKNOWN_COMMAND(
             SerinaDialogue.address("that order is unclear. Type help for available commands."), false),
+    /** Indicates that a command contains arguments it does not accept. */
+    UNEXPECTED_ARGUMENTS(SerinaDialogue.address("that command does not accept arguments. Type help for its format."),
+            false),
+    /** Indicates that the user submitted no command. */
+    EMPTY_COMMAND(SerinaDialogue.address("enter a command, or type help for available commands."), false),
+    /** Indicates that a command contains characters that cannot be stored safely. */
+    INVALID_CHARACTERS(SerinaDialogue.address("task text cannot contain line breaks or control characters."), false),
+    /** Indicates that a command parameter was supplied more than once. */
+    DUPLICATE_PARAMETER(SerinaDialogue.address("specify each date parameter exactly once."), false),
+    /** Indicates that an identical task already exists. */
+    DUPLICATE_TASK(SerinaDialogue.address("that task is already on the roster."), false),
     /** Indicates that a task number is missing, malformed, or outside the list. */
     INVALID_TASK_NUMBER(SerinaDialogue.address("provide a valid task number. Use list to review the roster."),
             false),
@@ -49,15 +61,20 @@ public enum SerinaError {
     /** Indicates that a date is invalid or has the wrong format. */
     INVALID_DATE(SerinaDialogue.address("use yyyy-MM-dd—for example, 2026-09-14."), false),
     /** Indicates that an event ends before it starts. */
-    INVALID_EVENT_DATE_RANGE(SerinaDialogue.address("the event end date must be on or after its start date."),
+    INVALID_EVENT_DATE_RANGE(SerinaDialogue.address("the event end date must be after its start date."),
             false),
     /** Indicates that a save file contains more tasks than Serina supports. */
     LOAD_TOO_MANY_TASKS(SerinaDialogue.address("the save file contains more than the supported 100 tasks."),
             false),
     /** Indicates that saved tasks could not be loaded. */
     LOAD_FAILED(SerinaDialogue.address("I couldn't load your saved tasks."), false),
+    /** Indicates that task data is unavailable after a load failure. */
+    STORAGE_UNAVAILABLE(SerinaDialogue.address(
+            "saved tasks are unavailable. Repair the data file or its permissions, then restart Serina."), false),
     /** Indicates that tasks could not be saved. */
-    SAVE_FAILED(SerinaDialogue.address("I couldn't save your tasks."), false);
+    SAVE_FAILED(SerinaDialogue.address(
+            "I couldn't save your tasks, so the command was not applied. Check that the data folder is writable."),
+            false);
 
     private final String message;
     private final boolean shouldExit;

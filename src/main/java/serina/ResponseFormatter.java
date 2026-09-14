@@ -102,6 +102,20 @@ final class ResponseFormatter {
                 "  " + task);
     }
 
+    /** Returns the message shown when an already completed task is marked. */
+    static String formatAlreadyMarkedTask(Task task) {
+        return String.join("\n",
+                "Already complete, " + SerinaDialogue.CAPTAIN_NAME + ". No changes were needed.",
+                "  " + task);
+    }
+
+    /** Returns the message shown when an incomplete task is unmarked. */
+    static String formatAlreadyUnmarkedTask(Task task) {
+        return String.join("\n",
+                "That task is already active, " + SerinaDialogue.CAPTAIN_NAME + ". No changes were needed.",
+                "  " + task);
+    }
+
     /**
      * Returns the message shown after deleting a task.
      *
