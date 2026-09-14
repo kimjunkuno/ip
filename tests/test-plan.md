@@ -148,6 +148,13 @@ folders contain spaces and Chinese characters. Confirm Serina never overwrites a
 keeps Help and exit available after a load failure, and resumes normal operation after the storage problem is fixed
 and the application is restarted.
 
+### MT-06: Exit the graphical application
+
+Launch with `./gradlew run`, enter `bye`, and submit with Enter. Confirm the chat window closes and Gradle reports
+`BUILD SUCCESSFUL` and returns to the terminal prompt. Repeat using Send and with surrounding whitespace in `bye`.
+Confirm `bye later` shows a format error and keeps the window open. Repeat `bye` after starting with an invalid save
+file. An idle Gradle build daemon may remain available for later builds; the application process must terminate.
+
 ### Environment-dependent limitations
 
 Permission denial, disk exhaustion, interrupted processes, and filesystems without atomic-move support are manual

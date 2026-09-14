@@ -38,6 +38,7 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 import serina.ResponseMessage;
 import serina.Serina;
 import serina.storage.Storage;
@@ -56,6 +57,8 @@ public class MainWindowTest {
     @BeforeAll
     public static void startJavaFx() {
         Platform.startup(() -> {
+            // Keep the shared toolkit alive after the shutdown test closes its window.
+            Platform.setImplicitExit(false);
         });
     }
 
@@ -119,16 +122,25 @@ public class MainWindowTest {
             scrollPane.setVvalue(scrollPane.getVmax());
             saveSnapshot(root, SNAPSHOT_WIDTH, SNAPSHOT_HEIGHT, "serina-error-window.png");
 
-            userInput.setText("bye");
-            sendButton.fire();
-            assertEquals(9, dialogContainer.getChildren().size());
-            assertTrue(userInput.isDisabled());
-            assertTrue(sendButton.isDisabled());
-            assertTrue(helpButton.isDisabled());
+            Stage stage = new Stage();
+            stage.setScene(scene);
+            stage.show();
+            try {
+                assertTrue(stage.isShowing());
+                userInput.setText("bye");
+                sendButton.fire();
+                assertEquals(9, dialogContainer.getChildren().size());
+                assertTrue(userInput.isDisabled());
+                assertTrue(sendButton.isDisabled());
+                assertTrue(helpButton.isDisabled());
+                assertFalse(stage.isShowing());
 
-            root.applyCss();
-            root.layout();
-            saveSnapshot(root, SNAPSHOT_WIDTH, SNAPSHOT_HEIGHT, "serina-main-window.png");
+                root.applyCss();
+                root.layout();
+                saveSnapshot(root, SNAPSHOT_WIDTH, SNAPSHOT_HEIGHT, "serina-main-window.png");
+            } finally {
+                stage.close();
+            }
             return null;
         });
     }
